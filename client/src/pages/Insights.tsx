@@ -14,8 +14,10 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  FolderTree
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -28,6 +30,7 @@ export default function Insights() {
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const [startPickerOpen, setStartPickerOpen] = useState(false);
   const [endPickerOpen, setEndPickerOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   
   // Calculate date range based on period
   const { startDate, endDate } = useMemo(() => {
@@ -72,6 +75,9 @@ export default function Insights() {
     { enabled: !!startDate && !!endDate }
   );
   
+  // Fetch categories
+  const { data: categories } = trpc.categories.list.useQuery();
+  
   const handleCustomDateSelect = (type: "start" | "end", date: Date | undefined) => {
     if (type === "start") {
       setCustomStartDate(date);
@@ -88,8 +94,19 @@ export default function Insights() {
     }
   };
   
-  const meetingGoal = insights?.meetingGoal || [];
-  const notMeetingGoal = insights?.notMeetingGoal || [];
+  // Filter by category
+  const meetingGoal = useMemo(() => {
+    const data = insights?.meetingGoal || [];
+    if (selectedCategory === "all") return data;
+    return data.filter(p => p.category === selectedCategory);
+  }, [insights?.meetingGoal, selectedCategory]);
+  
+  const notMeetingGoal = useMemo(() => {
+    const data = insights?.notMeetingGoal || [];
+    if (selectedCategory === "all") return data;
+    return data.filter(p => p.category === selectedCategory);
+  }, [insights?.notMeetingGoal, selectedCategory]);
+  
   const daysInPeriod = insights?.daysInPeriod || 0;
   
   return (
@@ -198,6 +215,22 @@ export default function Insights() {
               </PopoverContent>
             </Popover>
           </div>
+          
+          {/* Category filter */}
+          {categories && categories.length > 0 && (
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[200px]">
+                <FolderTree className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas Categorias</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         
         {/* Summary cards */}

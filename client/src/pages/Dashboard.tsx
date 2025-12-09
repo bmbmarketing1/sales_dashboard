@@ -48,6 +48,20 @@ import { ptBR } from "date-fns/locale";
 import { getLoginUrl } from "@/const";
 import { cn } from "@/lib/utils";
 
+// Função para formatar valores monetários grandes de forma compacta
+const formatCurrency = (value: number): string => {
+  if (value >= 1000000000) {
+    return `R$ ${(value / 1000000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} bi`;
+  }
+  if (value >= 1000000) {
+    return `R$ ${(value / 1000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} mi`;
+  }
+  if (value >= 100000) {
+    return `R$ ${(value / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil`;
+  }
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};
+
 type PeriodType = "1d" | "7d" | "15d" | "30d" | "month" | "custom";
 
 export default function Dashboard() {
@@ -481,7 +495,7 @@ export default function Dashboard() {
         </div>
         
         {/* Summary cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -504,7 +518,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm text-gray-500">Faturamento</p>
                   <p className="text-3xl font-bold text-gray-800">
-                    {(totalRevenue / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    {formatCurrency(totalRevenue / 100)}
                   </p>
                 </div>
                 <DollarSign className="w-10 h-10 text-emerald-500" />
@@ -518,26 +532,16 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm text-gray-500">Meta do Período</p>
                   <p className="text-3xl font-bold text-gray-800">{totalGoals}</p>
-                </div>
-                <Target className="w-10 h-10 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Atingimento</p>
-                  <p className={`text-3xl font-bold ${
+                  <p className={`text-xs mt-1 font-semibold ${
                     overallPercentage >= 100 ? "text-green-600" :
                     overallPercentage >= 70 ? "text-yellow-600" :
                     "text-red-600"
                   }`}>
-                    {overallPercentage}%
+                    <TrendingUp className="w-3 h-3 inline mr-1" />
+                    {overallPercentage}% atingido
                   </p>
                 </div>
-                <TrendingUp className="w-10 h-10 text-purple-500" />
+                <Target className="w-10 h-10 text-green-500" />
               </div>
             </CardContent>
           </Card>

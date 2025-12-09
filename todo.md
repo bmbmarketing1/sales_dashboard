@@ -142,3 +142,11 @@
 - [x] Adicionar faturamento individual na linha de cada produto
 - [x] Remover modal de detalhes da página de marketplace
 - [x] Distribuir faturamento proporcionalmente entre canais com vendas
+
+
+## Melhorias Solicitadas - Dezembro 2025
+
+- [x] Adicionar filtro por categoria na aba Insights
+- [x] Restaurar modal de histórico na página de marketplace
+- [x] Juntar card de Atingimento com Meta do Período (similar ao SKUs com Vendas)
+- [x] Ajustar formatação do faturamento para suportar valores acima de R$ 100.000.000,00 (mil, mi, bi)

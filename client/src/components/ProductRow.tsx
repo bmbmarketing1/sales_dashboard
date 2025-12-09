@@ -6,6 +6,20 @@ import { GoalEditor } from "./GoalEditor";
 import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Função para formatar valores monetários grandes de forma compacta
+const formatCurrency = (value: number): string => {
+  if (value >= 1000000000) {
+    return `R$ ${(value / 1000000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} bi`;
+  }
+  if (value >= 1000000) {
+    return `R$ ${(value / 1000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} mi`;
+  }
+  if (value >= 100000) {
+    return `R$ ${(value / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil`;
+  }
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};
+
 interface ChannelSale {
   channelId: number;
   channelName: string;
@@ -102,7 +116,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel }: ProductRowPr
           <div className="flex items-center gap-1 shrink-0 min-w-[100px]">
             <DollarSign className="w-4 h-4 text-emerald-500" />
             <span className="text-sm font-semibold text-gray-700">
-              {((product.totalRevenue || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              {formatCurrency((product.totalRevenue || 0) / 100)}
             </span>
           </div>
           

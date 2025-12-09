@@ -554,6 +554,7 @@ export async function getProductsInsights(startDate: string, endDate: string) {
     productId: number;
     internalCode: string;
     description: string;
+    category: string | null;
     totalSales: number;
     totalGoal: number;
     percentage: number;
@@ -579,6 +580,7 @@ export async function getProductsInsights(startDate: string, endDate: string) {
       productId: product.id,
       internalCode: product.internalCode,
       description: product.description,
+      category: product.category,
       totalSales,
       totalGoal,
       percentage,
