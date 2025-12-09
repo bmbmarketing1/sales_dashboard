@@ -36,6 +36,13 @@
       "when": 1765307465636,
       "tag": "0004_curvy_daredevil",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1765312016051,
+      "tag": "0005_lame_millenium_guard",
+      "breakpoints": true
     }
   ]
 }

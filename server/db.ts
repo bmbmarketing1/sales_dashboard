@@ -214,6 +214,29 @@ export async function updateProductCategory(internalCode: string, category: stri
     .where(eq(products.internalCode, internalCode));
 }
 
+export async function updateProductImage(internalCode: string, imageUrl: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  const result = await db.update(products)
+    .set({ imageUrl })
+    .where(eq(products.internalCode, internalCode));
+  
+  return true;
+}
+
+export async function getProductByInternalCode(internalCode: string): Promise<Product | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select()
+    .from(products)
+    .where(eq(products.internalCode, internalCode))
+    .limit(1);
+  
+  return result[0] || null;
+}
+
 export async function getUniqueCategories(): Promise<string[]> {
   const db = await getDb();
   if (!db) return [];

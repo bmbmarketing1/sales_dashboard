@@ -150,3 +150,12 @@
 - [x] Restaurar modal de histórico na página de marketplace
 - [x] Juntar card de Atingimento com Meta do Período (similar ao SKUs com Vendas)
 - [x] Ajustar formatação do faturamento para suportar valores acima de R$ 100.000.000,00 (mil, mi, bi)
+
+
+## Imagens de Produtos
+
+- [x] Analisar formato da planilha de imagens
+- [x] Adicionar campo imageUrl na tabela de produtos
+- [x] Criar API para importar URLs de imagens da planilha
+- [x] Criar botão "Fotos" na página inicial para upload da planilha
+- [x] Exibir imagem do produto na página de detalhes

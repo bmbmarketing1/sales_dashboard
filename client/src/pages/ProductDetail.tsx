@@ -191,9 +191,26 @@ export default function ProductDetail() {
                 <ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
+            {product.imageUrl ? (
+              <img 
+                src={product.imageUrl} 
+                alt={product.description}
+                className="w-16 h-16 object-cover rounded-lg border shadow-sm"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center">
+                <Package className="w-8 h-8 text-gray-400" />
+              </div>
+            )}
             <div>
               <p className="text-sm text-gray-500">{product.internalCode}</p>
               <h1 className="text-xl font-bold text-gray-800">{product.description}</h1>
+              {product.category && (
+                <p className="text-xs text-blue-600">{product.category}</p>
+              )}
             </div>
           </div>
         </div>

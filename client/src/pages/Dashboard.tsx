@@ -11,6 +11,7 @@ import { ProductRow } from "@/components/ProductRow";
 import { FileUpload } from "@/components/FileUpload";
 import { CategoryUpload } from "@/components/CategoryUpload";
 import { ProductUpload } from "@/components/ProductUpload";
+import { ImageUpload } from "@/components/ImageUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
@@ -28,6 +29,7 @@ import {
   Plus,
   Store,
   DollarSign,
+  Image,
   ShoppingBag
 } from "lucide-react";
 import { Link } from "wouter";
@@ -84,6 +86,7 @@ export default function Dashboard() {
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [categoryUploadOpen, setCategoryUploadOpen] = useState(false);
   const [productUploadOpen, setProductUploadOpen] = useState(false);
+  const [imageUploadOpen, setImageUploadOpen] = useState(false);
   
   // Category filter state
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -312,6 +315,10 @@ export default function Dashboard() {
               <Button variant="outline" onClick={() => setCategoryUploadOpen(true)}>
                 <FolderTree className="w-4 h-4 mr-2" />
                 Categorias
+              </Button>
+              <Button variant="outline" onClick={() => setImageUploadOpen(true)}>
+                <Image className="w-4 h-4 mr-2" />
+                Fotos
               </Button>
               <Button onClick={() => setUploadOpen(true)}>
                 <Upload className="w-4 h-4 mr-2" />
@@ -724,6 +731,12 @@ export default function Dashboard() {
       <ProductUpload
         open={productUploadOpen}
         onOpenChange={setProductUploadOpen}
+        onSuccess={handleImportSuccess}
+      />
+      
+      <ImageUpload
+        open={imageUploadOpen}
+        onOpenChange={setImageUploadOpen}
         onSuccess={handleImportSuccess}
       />
     </div>

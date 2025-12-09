@@ -27,6 +27,7 @@ export const products = mysqlTable("products", {
   internalCode: varchar("internalCode", { length: 20 }).notNull().unique(), // Código Interno (BQ061, etc)
   description: varchar("description", { length: 255 }).notNull(),
   category: varchar("category", { length: 100 }), // Categoria do produto (Brinquedos, Bebê, etc)
+  imageUrl: varchar("imageUrl", { length: 1000 }), // URL da imagem do produto
   dailyGoal: int("dailyGoal").default(0).notNull(), // Meta diária do produto
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

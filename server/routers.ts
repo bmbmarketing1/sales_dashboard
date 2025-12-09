@@ -28,6 +28,7 @@ import {
   clearAllSalesData,
   getProductsInsights,
   updateProductCategory,
+  updateProductImage,
   getUniqueCategories,
   upsertProduct,
   initializeProductChannelGoalsForProduct,
@@ -125,6 +126,73 @@ export const appRouter = router({
           
           if (internalCode && category) {
             await updateProductCategory(internalCode, category);
+            updatedCount++;
+          }
+        }
+        
+        return {
+          success: true,
+          updatedCount,
+        };
+      }),
+  }),
+
+  // Import product images from spreadsheet
+  images: router({
+    import: protectedProcedure
+      .input(z.object({
+        fileBase64: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Decode base64 file
+        const buffer = Buffer.from(input.fileBase64, 'base64');
+        
+        // Parse XLS file
+        const workbook = XLSX.read(buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+        
+        // Find header row (look for "Cód. Interno" and "URL IMAGEM")
+        let headerRowIndex = -1;
+        let codeColIndex = -1;
+        let imageColIndex = -1;
+        
+        for (let i = 0; i < Math.min(5, data.length); i++) {
+          const row = data[i];
+          if (Array.isArray(row)) {
+            for (let j = 0; j < row.length; j++) {
+              const cell = String(row[j] || '').toLowerCase();
+              if (cell.includes('cód. interno') || cell.includes('cod. interno') || cell.includes('código interno')) {
+                codeColIndex = j;
+              }
+              if (cell.includes('url imagem') || cell.includes('imagem') || cell.includes('image')) {
+                imageColIndex = j;
+              }
+            }
+            if (codeColIndex !== -1 && imageColIndex !== -1) {
+              headerRowIndex = i;
+              break;
+            }
+          }
+        }
+        
+        if (headerRowIndex === -1 || codeColIndex === -1 || imageColIndex === -1) {
+          throw new Error('Colunas "Cód. Interno" e "URL IMAGEM" não encontradas na planilha');
+        }
+        
+        // Process data rows
+        let updatedCount = 0;
+        for (let i = headerRowIndex + 1; i < data.length; i++) {
+          const row = data[i];
+          if (!Array.isArray(row)) continue;
+          
+          const internalCode = String(row[codeColIndex] || '').trim();
+          const imageUrl = String(row[imageColIndex] || '').trim();
+          
+          if (internalCode && imageUrl) {
+            await updateProductImage(internalCode, imageUrl);
             updatedCount++;
           }
         }
