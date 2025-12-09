@@ -219,10 +219,10 @@ export async function upsertDailySale(productId: number, channelId: number, sale
   const db = await getDb();
   if (!db) return;
   
-  // Check if record exists
+  // Check if record exists - use string comparison for date
   const existing = await db.select()
     .from(dailySales)
-    .where(sql`${dailySales.productId} = ${productId} AND ${dailySales.channelId} = ${channelId} AND ${dailySales.saleDate} = ${saleDate}`)
+    .where(sql`${dailySales.productId} = ${productId} AND ${dailySales.channelId} = ${channelId} AND DATE(${dailySales.saleDate}) = ${saleDate}`)
     .limit(1);
   
   if (existing.length > 0) {
@@ -230,12 +230,8 @@ export async function upsertDailySale(productId: number, channelId: number, sale
       .set({ quantity })
       .where(eq(dailySales.id, existing[0].id));
   } else {
-    await db.insert(dailySales).values({
-      productId,
-      channelId,
-      saleDate: new Date(saleDate),
-      quantity,
-    });
+    // Use SQL date string directly to avoid timezone issues
+    await db.execute(sql`INSERT INTO daily_sales (productId, channelId, saleDate, quantity) VALUES (${productId}, ${channelId}, ${saleDate}, ${quantity})`);
   }
 }
 
@@ -280,8 +276,13 @@ export async function getProductSalesWithChannels(saleDate: string) {
     
     const totalSales = channelSales.reduce((sum, cs) => sum + cs.quantity, 0);
     
+    // Calculate daily goal as sum of channel goals
+    const calculatedDailyGoal = channelSales.reduce((sum, cs) => sum + cs.channelGoal, 0);
+    
     return {
       ...product,
+      // Use calculated goal from channels, fallback to product.dailyGoal if no channel goals set
+      dailyGoal: calculatedDailyGoal > 0 ? calculatedDailyGoal : product.dailyGoal,
       totalSales,
       channelSales,
     };
@@ -325,7 +326,17 @@ export async function getDailyTotals(year: number, month: number) {
     .groupBy(dailySales.saleDate)
     .orderBy(dailySales.saleDate);
   
-  return result;
+  // Adjust dates for Brazil timezone (UTC-3)
+  return result.map(r => {
+    let adjustedDate = r.saleDate;
+    if (r.saleDate instanceof Date) {
+      adjustedDate = new Date(r.saleDate.getTime() + (3 * 60 * 60 * 1000));
+    }
+    return {
+      ...r,
+      saleDate: adjustedDate,
+    };
+  });
 }
 
 // ============ IMPORTED FILES ============
@@ -392,9 +403,19 @@ export async function getProductSalesHistory(productId: number, startDate: strin
   const salesByDate: Record<string, { channelId: number; quantity: number }[]> = {};
   
   sales.forEach(sale => {
-    const dateStr = sale.saleDate instanceof Date 
-      ? sale.saleDate.toISOString().split('T')[0] 
-      : String(sale.saleDate);
+    // Handle date properly - use Brazil timezone (UTC-3)
+    let dateStr: string;
+    if (sale.saleDate instanceof Date) {
+      // Add 3 hours to compensate for Brazil timezone (UTC-3)
+      // MySQL DATE is stored as UTC midnight, which becomes previous day in Brazil
+      const adjustedDate = new Date(sale.saleDate.getTime() + (3 * 60 * 60 * 1000));
+      const year = adjustedDate.getFullYear();
+      const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(adjustedDate.getDate()).padStart(2, '0');
+      dateStr = `${year}-${month}-${day}`;
+    } else {
+      dateStr = String(sale.saleDate);
+    }
     
     if (!salesByDate[dateStr]) {
       salesByDate[dateStr] = [];
@@ -404,6 +425,15 @@ export async function getProductSalesHistory(productId: number, startDate: strin
       quantity: sale.quantity,
     });
   });
+  
+  // Calculate daily goal as sum of channel goals
+  const calculatedDailyGoal = allChannels.reduce((sum, channel) => {
+    const goal = goals.find(g => g.productId === productId && g.channelId === channel.id);
+    return sum + (goal?.dailyGoal || 0);
+  }, 0);
+  
+  // Use calculated goal from channels, fallback to product.dailyGoal if no channel goals set
+  const effectiveDailyGoal = calculatedDailyGoal > 0 ? calculatedDailyGoal : product.dailyGoal;
   
   // Build result with all dates that have sales
   const result = Object.entries(salesByDate).map(([date, channelSales]) => {
@@ -419,14 +449,14 @@ export async function getProductSalesHistory(productId: number, startDate: strin
     });
     
     const totalSales = channelData.reduce((sum, cs) => sum + cs.quantity, 0);
-    const metGoal = totalSales >= product.dailyGoal;
+    const metGoal = totalSales >= effectiveDailyGoal;
     
     return {
       date,
       totalSales,
-      dailyGoal: product.dailyGoal,
+      dailyGoal: effectiveDailyGoal,
       metGoal,
-      percentage: product.dailyGoal > 0 ? Math.round((totalSales / product.dailyGoal) * 100) : 0,
+      percentage: effectiveDailyGoal > 0 ? Math.round((totalSales / effectiveDailyGoal) * 100) : 0,
       channelSales: channelData,
     };
   });

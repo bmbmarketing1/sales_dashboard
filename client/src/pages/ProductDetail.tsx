@@ -98,6 +98,9 @@ export default function ProductDetail() {
         daysMetGoal: 0,
         totalDays: 0,
         goalPercentage: 0,
+        dailyGoal: 0,
+        totalGoal: 0,
+        totalPercentage: 0,
       };
     }
     
@@ -107,12 +110,22 @@ export default function ProductDetail() {
     const avgDaily = totalDays > 0 ? Math.round(totalSales / totalDays * 10) / 10 : 0;
     const goalPercentage = totalDays > 0 ? Math.round((daysMetGoal / totalDays) * 100) : 0;
     
+    // Get daily goal from first day (should be consistent)
+    const dailyGoal = salesHistory[0]?.dailyGoal || 0;
+    // Total goal = daily goal × number of days in period
+    const totalGoal = dailyGoal * totalDays;
+    // Percentage of total goal achieved
+    const totalPercentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
+    
     return {
       totalSales,
       avgDaily,
       daysMetGoal,
       totalDays,
       goalPercentage,
+      dailyGoal,
+      totalGoal,
+      totalPercentage,
     };
   }, [salesHistory]);
   
@@ -257,10 +270,20 @@ export default function ProductDetail() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Meta Diária</p>
-                  <p className="text-3xl font-bold text-gray-800">{product.dailyGoal}</p>
+                  <p className="text-sm text-gray-500">Meta do Período</p>
+                  <p className="text-3xl font-bold text-gray-800">{stats.totalGoal}</p>
+                  <p className="text-xs text-gray-400">{stats.dailyGoal}/dia × {stats.totalDays} dias</p>
                 </div>
-                <Target className="w-10 h-10 text-green-500" />
+                <div className="text-right">
+                  <Target className="w-10 h-10 text-green-500" />
+                  <span className={`text-lg font-bold ${
+                    stats.totalPercentage >= 100 ? "text-green-600" :
+                    stats.totalPercentage >= 70 ? "text-yellow-600" :
+                    "text-red-600"
+                  }`}>
+                    {stats.totalPercentage}%
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>

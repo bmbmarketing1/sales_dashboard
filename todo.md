@@ -46,3 +46,11 @@
 - [x] Gráfico de vendas diárias do produto por período
 - [x] Tabela de vendas por marketplace com atingimento de meta
 - [x] Indicador visual de dias que atingiram/não atingiram a meta
+
+
+## Correções de Bugs
+
+- [x] Corrigir timezone: data mostra 1 dia antes (ex: 01/12 mostra como 30/11)
+- [x] Registrar vendas zero quando produto não aparece na planilha
+- [x] Meta diária do produto = soma automática das metas por canal
+- [x] Cálculo correto: meta total do período = soma metas × dias buscados

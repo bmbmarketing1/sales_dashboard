@@ -240,6 +240,9 @@ export const appRouter = router({
         
         let recordsImported = 0;
         
+        // Track which products were found in the spreadsheet
+        const productsFoundInSheet = new Set<number>();
+        
         // Process each data row
         for (let i = 1; i < data.length; i++) {
           const row = data[i] as (string | number)[];
@@ -252,14 +255,25 @@ export const appRouter = router({
           const product = products.find(p => p.internalCode === internalCode);
           if (!product) continue;
           
-          // Process each channel
+          productsFoundInSheet.add(product.id);
+          
+          // Process each channel - register ALL values including zero
           for (const [channelName, channelId] of Object.entries(channelMap)) {
             const colIdx = columnIndices[channelName];
             if (colIdx === undefined) continue;
             
             const quantity = parseInt(row[colIdx]?.toString() || "0", 10) || 0;
-            if (quantity > 0) {
-              await upsertDailySale(product.id, channelId, fileDate, quantity);
+            await upsertDailySale(product.id, channelId, fileDate, quantity);
+            recordsImported++;
+          }
+        }
+        
+        // Register zero sales for products NOT in the spreadsheet
+        for (const product of products) {
+          if (!productsFoundInSheet.has(product.id)) {
+            // Product not in spreadsheet = zero sales for all channels
+            for (const channelId of Object.values(channelMap)) {
+              await upsertDailySale(product.id, channelId, fileDate, 0);
               recordsImported++;
             }
           }
