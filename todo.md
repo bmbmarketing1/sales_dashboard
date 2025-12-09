@@ -59,3 +59,10 @@
 
 - [x] API para limpar vendas e importações
 - [x] Botão de limpar dados na interface com confirmação
+
+## Melhorias na Página de Produto e Insights
+
+- [x] Simplificar página de produto: manter apenas tabela detalhada
+- [x] Marketplace: manter apenas termômetros (remover gráfico)
+- [x] Adicionar seletor de datas específicas (além de períodos)
+- [x] Nova aba Insights: produtos batendo meta vs não batendo

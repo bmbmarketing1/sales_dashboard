@@ -385,6 +385,91 @@ export async function clearAllSalesData(): Promise<{ salesDeleted: number; impor
   };
 }
 
+// ============ INSIGHTS ============
+
+export async function getProductsInsights(startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return { meetingGoal: [], notMeetingGoal: [] };
+  
+  const allProducts = await getAllProducts();
+  const allChannels = await getAllChannels();
+  const goals = await getAllProductChannelGoals();
+  
+  // Get all sales in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
+  
+  // Group sales by product
+  const salesByProduct = new Map<number, number>();
+  const daysByProduct = new Map<number, Set<string>>();
+  
+  for (const sale of sales) {
+    const current = salesByProduct.get(sale.productId) || 0;
+    salesByProduct.set(sale.productId, current + sale.quantity);
+    
+    const days = daysByProduct.get(sale.productId) || new Set();
+    const dateStr = sale.saleDate instanceof Date 
+      ? sale.saleDate.toISOString().split('T')[0]
+      : String(sale.saleDate);
+    days.add(dateStr);
+    daysByProduct.set(sale.productId, days);
+  }
+  
+  // Calculate days in period
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  const meetingGoal: Array<{
+    productId: number;
+    internalCode: string;
+    description: string;
+    totalSales: number;
+    totalGoal: number;
+    percentage: number;
+    dailyGoal: number;
+  }> = [];
+  
+  const notMeetingGoal: typeof meetingGoal = [];
+  
+  for (const product of allProducts) {
+    // Calculate daily goal from channel goals
+    let dailyGoal = 0;
+    for (const channel of allChannels) {
+      const goal = goals.find(g => g.productId === product.id && g.channelId === channel.id);
+      dailyGoal += goal?.dailyGoal || channel.dailyGoal;
+    }
+    if (dailyGoal === 0) dailyGoal = product.dailyGoal;
+    
+    const totalSales = salesByProduct.get(product.id) || 0;
+    const totalGoal = dailyGoal * daysInPeriod;
+    const percentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
+    
+    const productData = {
+      productId: product.id,
+      internalCode: product.internalCode,
+      description: product.description,
+      totalSales,
+      totalGoal,
+      percentage,
+      dailyGoal,
+    };
+    
+    if (percentage >= 100) {
+      meetingGoal.push(productData);
+    } else {
+      notMeetingGoal.push(productData);
+    }
+  }
+  
+  // Sort by percentage descending
+  meetingGoal.sort((a, b) => b.percentage - a.percentage);
+  notMeetingGoal.sort((a, b) => b.percentage - a.percentage);
+  
+  return { meetingGoal, notMeetingGoal, daysInPeriod };
+}
+
 // ============ INITIALIZATION ============
 
 export async function initializeDatabase(): Promise<void> {

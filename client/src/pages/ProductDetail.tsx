@@ -3,11 +3,12 @@ import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Thermometer } from "@/components/Thermometer";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   ArrowLeft, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   TrendingUp, 
   Package, 
   Target,
@@ -15,35 +16,34 @@ import {
   XCircle,
   Loader2
 } from "lucide-react";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Legend,
-  ReferenceLine
-} from "recharts";
-import { format, subDays, startOfMonth, endOfMonth, parse } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
-type PeriodType = "7d" | "15d" | "30d" | "month";
+type PeriodType = "7d" | "15d" | "30d" | "month" | "custom";
 
 export default function ProductDetail() {
   const params = useParams();
   const productId = parseInt(params.id || "0", 10);
   
   const [period, setPeriod] = useState<PeriodType>("30d");
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  const [startPickerOpen, setStartPickerOpen] = useState(false);
+  const [endPickerOpen, setEndPickerOpen] = useState(false);
   
   // Calculate date range based on period
   const { startDate, endDate } = useMemo(() => {
     const today = new Date();
     let start: Date;
     let end: Date = today;
+    
+    if (period === "custom" && customStartDate && customEndDate) {
+      return {
+        startDate: format(customStartDate, "yyyy-MM-dd"),
+        endDate: format(customEndDate, "yyyy-MM-dd"),
+      };
+    }
     
     switch (period) {
       case "7d":
@@ -67,7 +67,7 @@ export default function ProductDetail() {
       startDate: format(start, "yyyy-MM-dd"),
       endDate: format(end, "yyyy-MM-dd"),
     };
-  }, [period]);
+  }, [period, customStartDate, customEndDate]);
   
   // Fetch product data
   const { data: product, isLoading: productLoading } = trpc.products.byId.useQuery(
@@ -129,26 +129,21 @@ export default function ProductDetail() {
     };
   }, [salesHistory]);
   
-  // Prepare chart data
-  const chartData = useMemo(() => {
-    if (!salesHistory) return [];
-    return salesHistory.map(day => ({
-      date: format(new Date(day.date), "dd/MM"),
-      vendas: day.totalSales,
-      meta: day.dailyGoal,
-      atingiu: day.metGoal ? "Sim" : "Não",
-    }));
-  }, [salesHistory]);
-  
-  // Prepare channel chart data
-  const channelChartData = useMemo(() => {
-    if (!channelSummary) return [];
-    return channelSummary.map(ch => ({
-      name: ch.channelName,
-      vendas: ch.totalSales,
-      meta: ch.dailyGoal * (salesHistory?.length || 1),
-    }));
-  }, [channelSummary, salesHistory]);
+  const handleCustomDateSelect = (type: "start" | "end", date: Date | undefined) => {
+    if (type === "start") {
+      setCustomStartDate(date);
+      setStartPickerOpen(false);
+      if (date && customEndDate) {
+        setPeriod("custom");
+      }
+    } else {
+      setCustomEndDate(date);
+      setEndPickerOpen(false);
+      if (customStartDate && date) {
+        setPeriod("custom");
+      }
+    }
+  };
   
   if (isLoading) {
     return (
@@ -206,9 +201,9 @@ export default function ProductDetail() {
       
       <main className="container py-6">
         {/* Period selector */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Calendar className="w-5 h-5 text-gray-500" />
-          <div className="flex bg-white rounded-lg border p-1">
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <CalendarIcon className="w-5 h-5 text-gray-500" />
+          <div className="flex flex-wrap bg-white rounded-lg border p-1 gap-1">
             <Button
               variant={period === "7d" ? "default" : "ghost"}
               size="sm"
@@ -237,6 +232,59 @@ export default function ProductDetail() {
             >
               Mês atual
             </Button>
+          </div>
+          
+          {/* Custom date pickers */}
+          <div className="flex items-center gap-2 ml-2">
+            <Popover open={startPickerOpen} onOpenChange={setStartPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={period === "custom" ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !customStartDate && "text-muted-foreground"
+                  )}
+                >
+                  {customStartDate ? format(customStartDate, "dd/MM/yyyy") : "Data início"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customStartDate}
+                  onSelect={(date) => handleCustomDateSelect("start", date)}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <span className="text-gray-400">até</span>
+            
+            <Popover open={endPickerOpen} onOpenChange={setEndPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={period === "custom" ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !customEndDate && "text-muted-foreground"
+                  )}
+                >
+                  {customEndDate ? format(customEndDate, "dd/MM/yyyy") : "Data fim"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customEndDate}
+                  onSelect={(date) => handleCustomDateSelect("end", date)}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         
@@ -315,192 +363,114 @@ export default function ProductDetail() {
           </Card>
         </div>
         
-        <Tabs defaultValue="daily" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="daily">Histórico Diário</TabsTrigger>
-            <TabsTrigger value="channels">Por Marketplace</TabsTrigger>
-            <TabsTrigger value="table">Tabela Detalhada</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="daily">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vendas Diárias vs Meta</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {chartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <ReferenceLine 
-                        y={product.dailyGoal} 
-                        stroke="#22c55e" 
-                        strokeDasharray="5 5"
-                        label={{ value: `Meta: ${product.dailyGoal}`, position: "right" }}
+        {/* Marketplace thermometers */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Performance por Marketplace</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {channelSummary && channelSummary.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {channelSummary.map((channel) => {
+                  const totalGoal = channel.dailyGoal * (salesHistory?.length || 1);
+                  const percentage = totalGoal > 0 
+                    ? Math.round((channel.totalSales / totalGoal) * 100) 
+                    : 0;
+                  
+                  return (
+                    <div 
+                      key={channel.channelId}
+                      className="flex flex-col items-center p-4 bg-gray-50 rounded-lg"
+                    >
+                      <span className="text-3xl mb-2">{getChannelIcon(channel.channelName)}</span>
+                      <p className="font-medium text-sm mb-1">{channel.channelName}</p>
+                      <Thermometer 
+                        value={channel.totalSales} 
+                        goal={totalGoal} 
+                        size="lg"
                       />
-                      <Bar 
-                        dataKey="vendas" 
-                        fill="#3b82f6" 
-                        name="Vendas"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="py-12 text-center text-gray-500">
-                    Nenhum dado disponível para o período selecionado
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="channels">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vendas por Marketplace</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {channelChartData.length > 0 ? (
-                  <>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={channelChartData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={120} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar 
-                          dataKey="vendas" 
-                          fill="#3b82f6" 
-                          name="Vendas"
-                          radius={[0, 4, 4, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                    
-                    <div className="mt-6 space-y-3">
-                      {channelSummary?.map((channel) => {
-                        const totalGoal = channel.dailyGoal * (salesHistory?.length || 1);
-                        const percentage = totalGoal > 0 
-                          ? Math.round((channel.totalSales / totalGoal) * 100) 
-                          : 0;
-                        
-                        return (
-                          <div 
-                            key={channel.channelId}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">{getChannelIcon(channel.channelName)}</span>
-                              <div>
-                                <p className="font-medium">{channel.channelName}</p>
-                                <p className="text-sm text-gray-500">
-                                  {channel.daysWithSales} dias com vendas
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <p className="font-bold text-lg">{channel.totalSales}</p>
-                                <p className="text-sm text-gray-500">
-                                  Meta: {totalGoal}
-                                </p>
-                              </div>
-                              <Thermometer 
-                                value={channel.totalSales} 
-                                goal={totalGoal} 
-                                size="md"
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
+                      <p className="mt-2 text-lg font-bold">{channel.totalSales}</p>
+                      <p className="text-xs text-gray-500">Meta: {totalGoal}</p>
                     </div>
-                  </>
-                ) : (
-                  <div className="py-12 text-center text-gray-500">
-                    Nenhum dado disponível para o período selecionado
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="table">
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico Detalhado</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {salesHistory && salesHistory.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2">Data</th>
-                          <th className="text-center py-3 px-2">Total</th>
-                          <th className="text-center py-3 px-2">Meta</th>
-                          <th className="text-center py-3 px-2">%</th>
-                          <th className="text-center py-3 px-2">Status</th>
-                          {channelSummary?.map(ch => (
-                            <th key={ch.channelId} className="text-center py-3 px-2">
-                              {getChannelIcon(ch.channelName)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {salesHistory.map((day) => (
-                          <tr key={day.date} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-2">
-                              {format(new Date(day.date), "dd/MM/yyyy", { locale: ptBR })}
-                            </td>
-                            <td className="text-center py-3 px-2 font-medium">
-                              {day.totalSales}
-                            </td>
-                            <td className="text-center py-3 px-2 text-gray-500">
-                              {day.dailyGoal}
-                            </td>
-                            <td className="text-center py-3 px-2">
-                              <span className={`font-medium ${
-                                day.percentage >= 100 ? "text-green-600" :
-                                day.percentage >= 70 ? "text-yellow-600" :
-                                "text-red-600"
-                              }`}>
-                                {day.percentage}%
-                              </span>
-                            </td>
-                            <td className="text-center py-3 px-2">
-                              {day.metGoal ? (
-                                <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                              ) : (
-                                <XCircle className="w-5 h-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                            {day.channelSales.map((ch) => (
-                              <td key={ch.channelId} className="text-center py-3 px-2">
-                                {ch.quantity > 0 ? ch.quantity : "-"}
-                              </td>
-                            ))}
-                          </tr>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-gray-500">
+                Nenhum dado disponível para o período selecionado
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        {/* Detailed table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Histórico Detalhado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {salesHistory && salesHistory.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2">Data</th>
+                      <th className="text-center py-3 px-2">Total</th>
+                      <th className="text-center py-3 px-2">Meta</th>
+                      <th className="text-center py-3 px-2">%</th>
+                      <th className="text-center py-3 px-2">Status</th>
+                      {channelSummary?.map(ch => (
+                        <th key={ch.channelId} className="text-center py-3 px-2">
+                          {getChannelIcon(ch.channelName)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesHistory.map((day) => (
+                      <tr key={day.date} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-2">
+                          {format(new Date(day.date), "dd/MM/yyyy", { locale: ptBR })}
+                        </td>
+                        <td className="text-center py-3 px-2 font-medium">
+                          {day.totalSales}
+                        </td>
+                        <td className="text-center py-3 px-2 text-gray-500">
+                          {day.dailyGoal}
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          <span className={`font-medium ${
+                            day.percentage >= 100 ? "text-green-600" :
+                            day.percentage >= 70 ? "text-yellow-600" :
+                            "text-red-600"
+                          }`}>
+                            {day.percentage}%
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          {day.metGoal ? (
+                            <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                          ) : (
+                            <XCircle className="w-5 h-5 text-red-500 mx-auto" />
+                          )}
+                        </td>
+                        {day.channelSales.map((ch) => (
+                          <td key={ch.channelId} className="text-center py-3 px-2">
+                            {ch.quantity > 0 ? ch.quantity : "-"}
+                          </td>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="py-12 text-center text-gray-500">
-                    Nenhum dado disponível para o período selecionado
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-12 text-center text-gray-500">
+                Nenhum dado disponível para o período selecionado
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

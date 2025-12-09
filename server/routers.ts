@@ -25,6 +25,7 @@ import {
   getProductSalesHistory,
   getProductChannelSummary,
   clearAllSalesData,
+  getProductsInsights,
 } from "./db";
 
 export const appRouter = router({
@@ -57,6 +58,18 @@ export const appRouter = router({
         ...result,
       };
     }),
+  }),
+
+  // Insights - products meeting vs not meeting goals
+  insights: router({
+    byPeriod: publicProcedure
+      .input(z.object({
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getProductsInsights(input.startDate, input.endDate);
+      }),
   }),
 
   // Products management

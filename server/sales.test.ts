@@ -62,6 +62,15 @@ vi.mock("./db", () => ({
     salesDeleted: 50,
     importsDeleted: 3,
   }),
+  getProductsInsights: vi.fn().mockResolvedValue({
+    meetingGoal: [
+      { productId: 1, internalCode: "BQ061", description: "Test Product 1", totalSales: 120, totalGoal: 100, percentage: 120, dailyGoal: 10 },
+    ],
+    notMeetingGoal: [
+      { productId: 2, internalCode: "BQ062", description: "Test Product 2", totalSales: 50, totalGoal: 100, percentage: 50, dailyGoal: 10 },
+    ],
+    daysInPeriod: 10,
+  }),
   getDailyTotals: vi.fn().mockResolvedValue([
     { saleDate: new Date("2025-12-01"), totalQuantity: 29 },
     { saleDate: new Date("2025-12-02"), totalQuantity: 40 },
@@ -274,5 +283,23 @@ describe("data management router", () => {
     expect(result.success).toBe(true);
     expect(result.salesDeleted).toBe(50);
     expect(result.importsDeleted).toBe(3);
+  });
+});
+
+describe("insights router", () => {
+  it("returns products meeting and not meeting goals", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.insights.byPeriod({
+      startDate: "2025-12-01",
+      endDate: "2025-12-10",
+    });
+
+    expect(result.meetingGoal).toHaveLength(1);
+    expect(result.notMeetingGoal).toHaveLength(1);
+    expect(result.daysInPeriod).toBe(10);
+    expect(result.meetingGoal[0].percentage).toBe(120);
+    expect(result.notMeetingGoal[0].percentage).toBe(50);
   });
 });

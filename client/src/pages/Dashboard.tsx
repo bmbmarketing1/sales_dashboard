@@ -17,8 +17,10 @@ import {
   Loader2,
   RefreshCw,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Lightbulb
 } from "lucide-react";
+import { Link } from "wouter";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -249,6 +251,7 @@ export default function Dashboard() {
           <TabsList>
             <TabsTrigger value="products">Produtos</TabsTrigger>
             <TabsTrigger value="chart">Gráfico Mensal</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
             <TabsTrigger value="imports">Importações</TabsTrigger>
           </TabsList>
           
@@ -311,6 +314,31 @@ export default function Dashboard() {
                     Nenhum dado disponível para o gráfico
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="insights">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-yellow-500" />
+                  Análise de Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center py-8">
+                <p className="text-gray-600 mb-4">
+                  Veja quais produtos estão batendo a meta e quais precisam de atenção.
+                </p>
+                <p className="text-sm text-gray-500 mb-6">
+                  Selecione um período personalizado para análise detalhada.
+                </p>
+                <Button asChild>
+                  <Link href="/insights">
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    Abrir Insights
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
