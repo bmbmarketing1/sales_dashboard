@@ -32,6 +32,7 @@ import {
   upsertProduct,
   initializeProductChannelGoalsForProduct,
   getSalesByMarketplace,
+  getProductChannelHistory,
 } from "./db";
 
 export const appRouter = router({
@@ -241,6 +242,16 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return getSalesByMarketplace(input.channelId, input.startDate, input.endDate);
+      }),
+    
+    productHistory: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+        channelId: z.number(),
+        days: z.number().optional().default(30),
+      }))
+      .query(async ({ input }) => {
+        return getProductChannelHistory(input.productId, input.channelId, input.days);
       }),
   }),
 

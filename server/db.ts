@@ -822,3 +822,77 @@ export async function getProductChannelSummary(productId: number, startDate: str
     };
   });
 }
+
+
+// ============ PRODUCT CHANNEL HISTORY ============
+
+export async function getProductChannelHistory(productId: number, channelId: number, days: number = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get goal for this product/channel
+  const goals = await getAllProductChannelGoals();
+  const goal = goals.find(g => g.productId === productId && g.channelId === channelId);
+  const dailyGoal = goal?.dailyGoal || 0;
+  
+  // Get product info
+  const allProducts = await getAllProducts();
+  const product = allProducts.find(p => p.id === productId);
+  
+  // Get channel info
+  const allChannels = await getAllChannels();
+  const channel = allChannels.find(c => c.id === channelId);
+  
+  // Calculate date range (last N days)
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  
+  const startDateStr = startDate.toISOString().split('T')[0];
+  const endDateStr = endDate.toISOString().split('T')[0];
+  
+  // Get sales data
+  const salesData = await db.select({
+    saleDate: dailySales.saleDate,
+    quantity: dailySales.quantity,
+  })
+    .from(dailySales)
+    .where(sql`${dailySales.productId} = ${productId} AND ${dailySales.channelId} = ${channelId} AND ${dailySales.saleDate} >= ${startDateStr} AND ${dailySales.saleDate} <= ${endDateStr}`)
+    .orderBy(dailySales.saleDate);
+  
+  // Create a map of date -> quantity
+  const salesMap = new Map<string, number>();
+  salesData.forEach(sale => {
+    const dateStr = sale.saleDate instanceof Date 
+      ? sale.saleDate.toISOString().split('T')[0]
+      : String(sale.saleDate).split('T')[0];
+    salesMap.set(dateStr, sale.quantity);
+  });
+  
+  // Generate all dates in range
+  const result = [];
+  const currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    const quantity = salesMap.get(dateStr) || 0;
+    
+    result.push({
+      date: dateStr,
+      quantity,
+      goal: dailyGoal,
+      percentage: dailyGoal > 0 ? Math.round((quantity / dailyGoal) * 100) : 0,
+      metGoal: quantity >= dailyGoal,
+    });
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return {
+    product: product ? { id: product.id, internalCode: product.internalCode, description: product.description } : null,
+    channel: channel ? { id: channel.id, name: channel.name } : null,
+    dailyGoal,
+    history: result,
+    totalSales: result.reduce((sum, r) => sum + r.quantity, 0),
+    totalGoal: dailyGoal * days,
+  };
+}

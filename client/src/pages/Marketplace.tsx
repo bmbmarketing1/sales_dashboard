@@ -8,6 +8,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Thermometer } from "@/components/Thermometer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
 import { 
   ArrowLeft, 
   Loader2, 
@@ -17,7 +33,9 @@ import {
   RefreshCw,
   Target,
   TrendingUp,
-  Store
+  Store,
+  BarChart3,
+  X
 } from "lucide-react";
 import { Link, useParams } from "wouter";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
@@ -44,6 +62,10 @@ export default function Marketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("default");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  
+  // Product history modal state
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
   
   const today = new Date();
   
@@ -98,6 +120,12 @@ export default function Marketplace() {
   
   // Fetch categories
   const { data: categories } = trpc.categories.list.useQuery();
+  
+  // Fetch product history for modal
+  const { data: productHistory, isLoading: historyLoading } = trpc.marketplace.productHistory.useQuery(
+    { productId: selectedProductId || 0, channelId, days: 30 },
+    { enabled: historyModalOpen && selectedProductId !== null }
+  );
   
   const handleCustomDateSelect = (type: "start" | "end", date: Date | undefined) => {
     if (type === "start") {
@@ -445,9 +473,20 @@ export default function Marketplace() {
                         {product.percentage}%
                       </div>
                       
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProductId(product.id);
+                          setHistoryModalOpen(true);
+                        }}
+                      >
+                        <BarChart3 className="w-4 h-4 mr-1" />
+                        Histórico
+                      </Button>
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/product/${product.id}`}>
-                          Ver detalhes
+                        <Link href={`/produto/${product.id}`}>
+                          Detalhes
                         </Link>
                       </Button>
                     </div>
@@ -467,6 +506,88 @@ export default function Marketplace() {
           </Card>
         )}
       </main>
+      
+      {/* Product History Modal */}
+      <Dialog open={historyModalOpen} onOpenChange={setHistoryModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Histórico de 30 dias - {productHistory && 'product' in productHistory ? productHistory.product?.description || 'Produto' : 'Produto'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+          ) : productHistory && 'history' in productHistory ? (
+            <div className="space-y-4">
+              {/* Summary cards */}
+              <div className="grid grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-gray-500">Total Vendido</p>
+                    <p className="text-2xl font-bold">{productHistory.totalSales}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-gray-500">Meta do Período</p>
+                    <p className="text-2xl font-bold">{productHistory.totalGoal}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-gray-500">Atingimento</p>
+                    <p className={cn(
+                      "text-2xl font-bold",
+                      productHistory.totalGoal > 0 && (productHistory.totalSales / productHistory.totalGoal) >= 1 ? "text-green-600" :
+                      productHistory.totalGoal > 0 && (productHistory.totalSales / productHistory.totalGoal) >= 0.5 ? "text-yellow-600" : "text-red-600"
+                    )}>
+                      {productHistory.totalGoal > 0 ? Math.round((productHistory.totalSales / productHistory.totalGoal) * 100) : 0}%
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Vendas diárias no {productHistory.channel?.name || ''}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={(productHistory.history || []).map((h: { date: string; quantity: number }) => ({
+                        ...h,
+                        date: h.date.split('-').slice(1).reverse().join('/'),
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+                        <YAxis />
+                        <Tooltip />
+                        <ReferenceLine y={productHistory.dailyGoal} stroke="#22c55e" strokeDasharray="5 5" label={{ value: 'Meta', position: 'right' }} />
+                        <Bar 
+                          dataKey="quantity" 
+                          fill="#3b82f6"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <p className="text-xs text-gray-500 text-center">
+                Meta diária: {'dailyGoal' in productHistory ? productHistory.dailyGoal : 0} unidades | Canal: {'channel' in productHistory ? productHistory.channel?.name : ''}
+              </p>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 py-8">Nenhum dado disponível</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

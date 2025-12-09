@@ -123,3 +123,10 @@
 - [x] Remover aba "Gráfico Mensal"
 - [x] Criar página de visão por marketplace
 - [x] Adicionar botão/filtro para acessar visão de cada marketplace
+
+
+## Melhorias na Página de Marketplace e Modelos de Planilha
+
+- [x] Adicionar gráfico de 30 dias na página de marketplace ao clicar em "Ver detalhes"
+- [x] Adicionar modelo de planilha para download no botão de Categorias
+- [x] Adicionar modelo de planilha para download no botão de Importar Planilha

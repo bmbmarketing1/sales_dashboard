@@ -109,6 +109,30 @@ export function CategoryUpload({ open, onOpenChange, onSuccess }: CategoryUpload
                 <p className="text-sm text-gray-400">
                   Formatos aceitos: .xls, .xlsx
                 </p>
+                <a
+                  href="/modelo-categorias.xls"
+                  download="modelo-categorias.xls"
+                  className="text-xs text-blue-600 hover:underline mt-2 inline-block"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const sampleData = [
+                      ['Código Interno', 'Categoria'],
+                      ['BQ001', 'Brinquedos'],
+                      ['BQ002', 'Bebê'],
+                      ['BQ003', 'Brinquedos'],
+                    ];
+                    const csvContent = sampleData.map(row => row.join('\t')).join('\n');
+                    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'modelo-categorias.xls';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Baixar modelo de planilha
+                </a>
               </div>
             )}
           </div>

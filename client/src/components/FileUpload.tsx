@@ -126,6 +126,30 @@ export function FileUpload({ open, onOpenChange, onSuccess }: FileUploadProps) {
                 <p className="text-sm text-gray-400">
                   Formato: DD-MM-YYYY.xls
                 </p>
+                <a
+                  href="/modelo-vendas.xls"
+                  download="modelo-vendas.xls"
+                  className="text-xs text-blue-600 hover:underline mt-2 inline-block"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Generate sample XLS content
+                    const sampleData = [
+                      ['Cód. ID', 'Cód. Interno', 'Descrição', 'Qtde. Total', 'Amazon', 'Magalu', 'Mercado Livre', 'Shopee', 'TikTok'],
+                      ['1', 'BQ001', 'Produto Exemplo 1', '10', '2', '3', '2', '2', '1'],
+                      ['2', 'BQ002', 'Produto Exemplo 2', '5', '1', '1', '1', '1', '1'],
+                    ];
+                    const csvContent = sampleData.map(row => row.join('\t')).join('\n');
+                    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'modelo-vendas.xls';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Baixar modelo de planilha
+                </a>
               </div>
             )}
           </div>
