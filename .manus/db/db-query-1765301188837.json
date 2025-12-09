@@ -1,0 +1,9 @@
+{
+  "query": "DELETE t1 FROM product_channel_goals t1\nINNER JOIN product_channel_goals t2 \nWHERE t1.id > t2.id \nAND t1.productId = t2.productId \nAND t1.channelId = t2.channelId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute DELETE t1 FROM product_channel_goals t1\nINNER JOIN product_channel_goals t2 \nWHERE t1.id > t2.id \nAND t1.productId = t2.productId \nAND t1.channelId = t2.channelId;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 57
+}

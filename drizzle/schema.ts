@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, date } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, date, unique } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -74,7 +74,9 @@ export const productChannelGoals = mysqlTable("product_channel_goals", {
   dailyGoal: int("dailyGoal").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  productChannelUnique: unique().on(table.productId, table.channelId),
+}));
 
 export type ProductChannelGoal = typeof productChannelGoals.$inferSelect;
 export type InsertProductChannelGoal = typeof productChannelGoals.$inferInsert;

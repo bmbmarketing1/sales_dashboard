@@ -1,0 +1,9 @@
+{
+  "query": "SELECT productId, channelId, COUNT(*) as cnt FROM product_channel_goals GROUP BY productId, channelId HAVING cnt > 1 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT productId, channelId, COUNT(*) as cnt FROM product_channel_goals GROUP BY productId, channelId HAVING cnt > 1 LIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 66
+}

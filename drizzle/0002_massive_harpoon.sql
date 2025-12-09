@@ -1,0 +1,1 @@
+ALTER TABLE `product_channel_goals` ADD CONSTRAINT `product_channel_goals_productId_channelId_unique` UNIQUE(`productId`,`channelId`);

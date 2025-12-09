@@ -15,6 +15,13 @@
       "when": 1765286871784,
       "tag": "0001_square_natasha_romanoff",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1765301181668,
+      "tag": "0002_massive_harpoon",
+      "breakpoints": true
     }
   ]
 }

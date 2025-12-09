@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE product_channel_goals ADD CONSTRAINT product_channel_goals_productId_channelId_unique UNIQUE(productId, channelId);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute ALTER TABLE product_channel_goals ADD CONSTRAINT product_channel_goals_productId_channelId_unique UNIQUE(productId, channelId);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1061 (42000) at line 1: index already exist product_channel_goals_productId_channelId_unique"
+  ]
+}

@@ -65,6 +65,9 @@ export default function Dashboard() {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   
+  // Sort state
+  const [sortOrder, setSortOrder] = useState<"default" | "best" | "worst">("default");
+  
   const [uploadOpen, setUploadOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   
@@ -179,18 +182,32 @@ export default function Dashboard() {
     utils.import.list.invalidate();
   };
   
-  // Filter products by search query
+  // Filter and sort products
   const filteredProducts = useMemo(() => {
     if (!periodData?.products) return [];
     
-    if (!searchQuery.trim()) return periodData.products;
+    let products = [...periodData.products];
     
-    const query = searchQuery.toLowerCase();
-    return periodData.products.filter(p => 
-      p.description.toLowerCase().includes(query) ||
-      p.internalCode.toLowerCase().includes(query)
-    );
-  }, [periodData?.products, searchQuery]);
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      products = products.filter(p => 
+        p.description.toLowerCase().includes(query) ||
+        p.internalCode.toLowerCase().includes(query)
+      );
+    }
+    
+    // Sort by performance
+    if (sortOrder !== "default") {
+      products.sort((a, b) => {
+        const percA = a.periodGoal > 0 ? (a.totalSales / a.periodGoal) * 100 : 0;
+        const percB = b.periodGoal > 0 ? (b.totalSales / b.periodGoal) * 100 : 0;
+        return sortOrder === "best" ? percB - percA : percA - percB;
+      });
+    }
+    
+    return products;
+  }, [periodData?.products, searchQuery, sortOrder]);
   
   // Calculate totals from period data
   const totalSales = filteredProducts.reduce((sum, p) => sum + p.totalSales, 0);
@@ -367,8 +384,8 @@ export default function Dashboard() {
           </span>
         </div>
         
-        {/* Search bar */}
-        <div className="flex justify-center mb-6">
+        {/* Search bar and sort options */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
@@ -377,6 +394,31 @@ export default function Dashboard() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={sortOrder === "default" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortOrder("default")}
+            >
+              Padrão
+            </Button>
+            <Button
+              variant={sortOrder === "best" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortOrder("best")}
+              className={sortOrder === "best" ? "bg-green-600 hover:bg-green-700" : ""}
+            >
+              Melhor ↑
+            </Button>
+            <Button
+              variant={sortOrder === "worst" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortOrder("worst")}
+              className={sortOrder === "worst" ? "bg-red-600 hover:bg-red-700" : ""}
+            >
+              Pior ↓
+            </Button>
           </div>
         </div>
         

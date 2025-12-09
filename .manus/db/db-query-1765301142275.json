@@ -1,0 +1,23 @@
+{
+  "query": "SHOW CREATE TABLE product_channel_goals;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SHOW CREATE TABLE product_channel_goals;",
+  "rows": [
+    {
+      "Table": "product_channel_goals",
+      "Create Table": "CREATE TABLE `product_channel_goals` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `productId` int(11) NOT NULL,",
+    "  `channelId` int(11) NOT NULL,",
+    "  `dailyGoal` int(11) NOT NULL DEFAULT '0',",
+    "  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=60001"
+  ],
+  "stdout": "Table\tCreate Table\nproduct_channel_goals\tCREATE TABLE `product_channel_goals` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `productId` int(11) NOT NULL,\n  `channelId` int(11) NOT NULL,\n  `dailyGoal` int(11) NOT NULL DEFAULT '0',\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=60001\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

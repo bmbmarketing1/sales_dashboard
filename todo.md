@@ -95,3 +95,9 @@
 - [x] Menu de período: adicionar opção "1 dia" (ontem)
 - [x] Layout do dashboard: mudar de cards para linhas
 - [x] Sequência das colunas: Referência | Nome | Meta + Termômetro | Botões navegação | Ver por canal
+
+
+## Correções e Novas Funcionalidades
+
+- [x] Bug: Atualização de metas por marketplace não está funcionando (adicionado unique constraint)
+- [x] Adicionar ordenação de produtos por desempenho (melhor → pior)
