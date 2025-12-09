@@ -26,7 +26,9 @@ import {
   Search,
   FolderTree,
   Plus,
-  Store
+  Store,
+  DollarSign,
+  ShoppingBag
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -226,6 +228,9 @@ export default function Dashboard() {
   // Calculate totals from period data
   const totalSales = filteredProducts.reduce((sum, p) => sum + p.totalSales, 0);
   const totalGoals = filteredProducts.reduce((sum, p) => sum + p.periodGoal, 0);
+  const totalRevenue = filteredProducts.reduce((sum, p) => sum + (p.totalRevenue || 0), 0);
+  const skusWithSales = filteredProducts.filter(p => p.totalSales > 0).length;
+  const totalSkus = filteredProducts.length;
   const overallPercentage = totalGoals > 0 ? Math.round((totalSales / totalGoals) * 100) : 0;
   
   // Period label for display
@@ -476,15 +481,33 @@ export default function Dashboard() {
         </div>
         
         {/* Summary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Vendas do Período</p>
                   <p className="text-3xl font-bold text-gray-800">{totalSales}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    <ShoppingBag className="w-3 h-3 inline mr-1" />
+                    {skusWithSales}/{totalSkus} SKUs
+                  </p>
                 </div>
                 <Package className="w-10 h-10 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Faturamento</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    {(totalRevenue / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </p>
+                </div>
+                <DollarSign className="w-10 h-10 text-emerald-500" />
               </div>
             </CardContent>
           </Card>
@@ -515,6 +538,20 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <TrendingUp className="w-10 h-10 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Ticket Médio</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    {totalSales > 0 ? ((totalRevenue / 100) / totalSales).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00'}
+                  </p>
+                </div>
+                <DollarSign className="w-10 h-10 text-orange-500" />
               </div>
             </CardContent>
           </Card>

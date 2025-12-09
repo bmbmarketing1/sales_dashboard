@@ -1,0 +1,1 @@
+ALTER TABLE `daily_sales` ADD `revenue` int DEFAULT 0 NOT NULL;

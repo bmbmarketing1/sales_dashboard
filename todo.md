@@ -130,3 +130,15 @@
 - [x] Adicionar gráfico de 30 dias na página de marketplace ao clicar em "Ver detalhes"
 - [x] Adicionar modelo de planilha para download no botão de Categorias
 - [x] Adicionar modelo de planilha para download no botão de Importar Planilha
+
+
+## Faturamento e Melhorias
+
+- [x] Adicionar campo faturamento na tabela de vendas
+- [x] Atualizar importação para ler coluna Faturamento da planilha
+- [x] Adicionar contador de SKUs com vendas na página inicial (ex: 15/19 SKUs)
+- [x] Adicionar card de Faturamento do Período na página inicial
+- [x] Adicionar card de Ticket Médio na página inicial
+- [x] Adicionar faturamento individual na linha de cada produto
+- [x] Remover modal de detalhes da página de marketplace
+- [x] Distribuir faturamento proporcionalmente entre canais com vendas

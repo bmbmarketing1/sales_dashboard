@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Thermometer } from "./Thermometer";
 import { GoalEditor } from "./GoalEditor";
-import { Settings, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChannelSale {
@@ -23,6 +23,7 @@ interface ProductWithSales {
   dailyGoal: number;
   periodGoal?: number;
   totalSales: number;
+  totalRevenue?: number;
   channelSales: ChannelSale[];
 }
 
@@ -95,6 +96,14 @@ export function ProductRow({ product, onGoalUpdated, periodLabel }: ProductRowPr
               goal={product.dailyGoal} 
               size="lg" 
             />
+          </div>
+          
+          {/* Revenue */}
+          <div className="flex items-center gap-1 shrink-0 min-w-[100px]">
+            <DollarSign className="w-4 h-4 text-emerald-500" />
+            <span className="text-sm font-semibold text-gray-700">
+              {((product.totalRevenue || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </span>
           </div>
           
           {/* Navigation buttons */}

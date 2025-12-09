@@ -281,7 +281,7 @@ export async function getAllProductChannelGoals() {
 
 // ============ DAILY SALES ============
 
-export async function upsertDailySale(productId: number, channelId: number, saleDate: string, quantity: number): Promise<void> {
+export async function upsertDailySale(productId: number, channelId: number, saleDate: string, quantity: number, revenue: number = 0): Promise<void> {
   const db = await getDb();
   if (!db) return;
   
@@ -292,12 +292,14 @@ export async function upsertDailySale(productId: number, channelId: number, sale
     .limit(1);
   
   if (existing.length > 0) {
+    // Update quantity and add revenue to existing (in case revenue comes from different channel)
+    const newRevenue = (existing[0].revenue || 0) + revenue;
     await db.update(dailySales)
-      .set({ quantity })
+      .set({ quantity, revenue: newRevenue })
       .where(eq(dailySales.id, existing[0].id));
   } else {
     // Use SQL date string directly to avoid timezone issues
-    await db.execute(sql`INSERT INTO daily_sales (productId, channelId, saleDate, quantity) VALUES (${productId}, ${channelId}, ${saleDate}, ${quantity})`);
+    await db.execute(sql`INSERT INTO daily_sales (productId, channelId, saleDate, quantity, revenue) VALUES (${productId}, ${channelId}, ${saleDate}, ${quantity}, ${revenue})`);
   }
 }
 
@@ -378,9 +380,9 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
   const products = allProducts.map(product => {
     const channelSales = allChannels.map(channel => {
       // Sum all sales for this product/channel in the period
-      const channelTotal = sales
-        .filter(s => s.productId === product.id && s.channelId === channel.id)
-        .reduce((sum, s) => sum + s.quantity, 0);
+      const productChannelSales = sales.filter(s => s.productId === product.id && s.channelId === channel.id);
+      const channelTotal = productChannelSales.reduce((sum, s) => sum + s.quantity, 0);
+      const channelRevenue = productChannelSales.reduce((sum, s) => sum + (s.revenue || 0), 0);
       
       const goal = goals.find(g => g.productId === product.id && g.channelId === channel.id);
       const dailyGoal = goal?.dailyGoal || 0;
@@ -389,12 +391,14 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
         channelId: channel.id,
         channelName: channel.name,
         quantity: channelTotal,
+        revenue: channelRevenue,
         channelGoal: dailyGoal,
         periodGoal: dailyGoal * daysInPeriod,
       };
     });
     
     const totalSales = channelSales.reduce((sum, cs) => sum + cs.quantity, 0);
+    const totalRevenue = channelSales.reduce((sum, cs) => sum + cs.revenue, 0);
     
     // Calculate daily goal as sum of channel goals
     const calculatedDailyGoal = channelSales.reduce((sum, cs) => sum + cs.channelGoal, 0);
@@ -406,6 +410,7 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
       dailyGoal: effectiveDailyGoal,
       periodGoal,
       totalSales,
+      totalRevenue,
       channelSales,
     };
   });

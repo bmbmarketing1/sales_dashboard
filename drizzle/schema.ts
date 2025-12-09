@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, date, unique } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, date, unique, decimal } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -58,6 +58,7 @@ export const dailySales = mysqlTable("daily_sales", {
   channelId: int("channelId").notNull(),
   saleDate: date("saleDate").notNull(),
   quantity: int("quantity").default(0).notNull(),
+  revenue: int("revenue").default(0).notNull(), // Faturamento em centavos
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -454,6 +454,8 @@ export const appRouter = router({
             columnIndices["shopee"] = idx;
           } else if (colLower === "tiktok") {
             columnIndices["tiktok"] = idx;
+          } else if (colLower === "faturamento" || colLower.includes("faturamento")) {
+            columnIndices["faturamento"] = idx;
           }
         });
         
@@ -476,13 +478,37 @@ export const appRouter = router({
           
           productsFoundInSheet.add(product.id);
           
-          // Process each channel - register ALL values including zero
+          // First, get the total revenue for this product/day
+          const revenueColIdx = columnIndices["faturamento"];
+          let totalRevenue = 0;
+          if (revenueColIdx !== undefined) {
+            const revenueValue = parseFloat(row[revenueColIdx]?.toString().replace(',', '.') || "0") || 0;
+            totalRevenue = Math.round(revenueValue * 100); // Convert to centavos
+          }
+          
+          // Calculate total sales across all channels to distribute revenue proportionally
+          let totalQuantity = 0;
+          const channelQuantities: Record<string, number> = {};
+          for (const [channelName] of Object.entries(channelMap)) {
+            const colIdx = columnIndices[channelName];
+            if (colIdx === undefined) continue;
+            const quantity = parseInt(row[colIdx]?.toString() || "0", 10) || 0;
+            channelQuantities[channelName] = quantity;
+            totalQuantity += quantity;
+          }
+          
+          // Process each channel - distribute revenue proportionally based on quantity
           for (const [channelName, channelId] of Object.entries(channelMap)) {
             const colIdx = columnIndices[channelName];
             if (colIdx === undefined) continue;
             
-            const quantity = parseInt(row[colIdx]?.toString() || "0", 10) || 0;
-            await upsertDailySale(product.id, channelId, fileDate, quantity);
+            const quantity = channelQuantities[channelName] || 0;
+            // Distribute revenue proportionally based on quantity sold in each channel
+            let channelRevenue = 0;
+            if (totalQuantity > 0 && totalRevenue > 0) {
+              channelRevenue = Math.round((quantity / totalQuantity) * totalRevenue);
+            }
+            await upsertDailySale(product.id, channelId, fileDate, quantity, channelRevenue);
             recordsImported++;
           }
         }
@@ -492,7 +518,7 @@ export const appRouter = router({
           if (!productsFoundInSheet.has(product.id)) {
             // Product not in spreadsheet = zero sales for all channels
             for (const channelId of Object.values(channelMap)) {
-              await upsertDailySale(product.id, channelId, fileDate, 0);
+              await upsertDailySale(product.id, channelId, fileDate, 0, 0);
               recordsImported++;
             }
           }
