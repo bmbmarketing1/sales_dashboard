@@ -21,6 +21,9 @@ import {
   getImportedFiles,
   isFileAlreadyImported,
   initializeDatabase,
+  getProductById,
+  getProductSalesHistory,
+  getProductChannelSummary,
 } from "./db";
 
 export const appRouter = router({
@@ -48,6 +51,37 @@ export const appRouter = router({
     list: publicProcedure.query(async () => {
       return getAllProducts();
     }),
+    
+    // Get single product by ID
+    byId: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return getProductById(input.productId);
+      }),
+    
+    // Get product sales history for a date range
+    history: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getProductSalesHistory(input.productId, input.startDate, input.endDate);
+      }),
+    
+    // Get product channel summary for a date range
+    channelSummary: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getProductChannelSummary(input.productId, input.startDate, input.endDate);
+      }),
     
     updateGoal: protectedProcedure
       .input(z.object({

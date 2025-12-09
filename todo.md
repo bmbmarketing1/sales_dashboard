@@ -38,3 +38,11 @@
 - [x] Modal para editar metas de produto
 - [x] Modal para editar metas de canal
 - [x] Dashboard com gráficos de tendência
+
+## Página de Detalhes do Produto
+
+- [x] API para histórico de vendas por produto com filtro de período
+- [x] Página de detalhes do produto com seletor de período
+- [x] Gráfico de vendas diárias do produto por período
+- [x] Tabela de vendas por marketplace com atingimento de meta
+- [x] Indicador visual de dias que atingiram/não atingiram a meta

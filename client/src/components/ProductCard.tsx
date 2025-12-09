@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Thermometer } from "./Thermometer";
 import { GoalEditor } from "./GoalEditor";
-import { Settings, ChevronDown, ChevronUp } from "lucide-react";
+import { Settings, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChannelSale {
@@ -68,6 +69,16 @@ export function ProductCard({ product, onGoalUpdated }: ProductCardProps) {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                asChild
+              >
+                <Link href={`/produto/${product.id}`}>
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

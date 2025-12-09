@@ -360,3 +360,107 @@ export async function initializeDatabase(): Promise<void> {
   await seedProducts();
   await seedChannels();
 }
+
+
+// ============ PRODUCT DETAIL HISTORY ============
+
+export async function getProductById(productId: number): Promise<Product | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getProductSalesHistory(productId: number, startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const allChannels = await getAllChannels();
+  const goals = await getAllProductChannelGoals();
+  const product = await getProductById(productId);
+  
+  if (!product) return [];
+  
+  // Get all sales for this product in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.productId} = ${productId} AND ${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`)
+    .orderBy(dailySales.saleDate);
+  
+  // Group sales by date
+  const salesByDate: Record<string, { channelId: number; quantity: number }[]> = {};
+  
+  sales.forEach(sale => {
+    const dateStr = sale.saleDate instanceof Date 
+      ? sale.saleDate.toISOString().split('T')[0] 
+      : String(sale.saleDate);
+    
+    if (!salesByDate[dateStr]) {
+      salesByDate[dateStr] = [];
+    }
+    salesByDate[dateStr].push({
+      channelId: sale.channelId,
+      quantity: sale.quantity,
+    });
+  });
+  
+  // Build result with all dates that have sales
+  const result = Object.entries(salesByDate).map(([date, channelSales]) => {
+    const channelData = allChannels.map(channel => {
+      const sale = channelSales.find(s => s.channelId === channel.id);
+      const goal = goals.find(g => g.productId === productId && g.channelId === channel.id);
+      return {
+        channelId: channel.id,
+        channelName: channel.name,
+        quantity: sale?.quantity || 0,
+        channelGoal: goal?.dailyGoal || 0,
+      };
+    });
+    
+    const totalSales = channelData.reduce((sum, cs) => sum + cs.quantity, 0);
+    const metGoal = totalSales >= product.dailyGoal;
+    
+    return {
+      date,
+      totalSales,
+      dailyGoal: product.dailyGoal,
+      metGoal,
+      percentage: product.dailyGoal > 0 ? Math.round((totalSales / product.dailyGoal) * 100) : 0,
+      channelSales: channelData,
+    };
+  });
+  
+  return result.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function getProductChannelSummary(productId: number, startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const allChannels = await getAllChannels();
+  const goals = await getAllProductChannelGoals();
+  
+  // Get total sales per channel for this product in the date range
+  const result = await db.select({
+    channelId: dailySales.channelId,
+    totalQuantity: sql<number>`SUM(${dailySales.quantity})`,
+    daysWithSales: sql<number>`COUNT(DISTINCT ${dailySales.saleDate})`,
+  })
+    .from(dailySales)
+    .where(sql`${dailySales.productId} = ${productId} AND ${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`)
+    .groupBy(dailySales.channelId);
+  
+  return allChannels.map(channel => {
+    const channelData = result.find(r => r.channelId === channel.id);
+    const goal = goals.find(g => g.productId === productId && g.channelId === channel.id);
+    
+    return {
+      channelId: channel.id,
+      channelName: channel.name,
+      totalSales: channelData?.totalQuantity || 0,
+      daysWithSales: channelData?.daysWithSales || 0,
+      dailyGoal: goal?.dailyGoal || 0,
+    };
+  });
+}

@@ -36,6 +36,28 @@ vi.mock("./db", () => ({
   getMonthlyAverages: vi.fn().mockResolvedValue([
     { productId: 1, totalQuantity: 30, daysWithSales: 10 },
   ]),
+  getProductById: vi.fn().mockResolvedValue({
+    id: 1,
+    externalId: 12916,
+    internalCode: "BQ061",
+    description: "COZINHA INFANTIL MODERNA 43 PCS",
+    dailyGoal: 5,
+  }),
+  getProductSalesHistory: vi.fn().mockResolvedValue([
+    {
+      date: "2025-12-01",
+      totalSales: 3,
+      dailyGoal: 5,
+      metGoal: false,
+      percentage: 60,
+      channelSales: [
+        { channelId: 1, channelName: "Amazon", quantity: 1, channelGoal: 2 },
+      ],
+    },
+  ]),
+  getProductChannelSummary: vi.fn().mockResolvedValue([
+    { channelId: 1, channelName: "Amazon", totalSales: 10, daysWithSales: 3, dailyGoal: 2 },
+  ]),
   getDailyTotals: vi.fn().mockResolvedValue([
     { saleDate: new Date("2025-12-01"), totalQuantity: 29 },
     { saleDate: new Date("2025-12-02"), totalQuantity: 40 },
@@ -193,5 +215,47 @@ describe("init router", () => {
     const result = await caller.init.seed();
 
     expect(result).toEqual({ success: true });
+  });
+});
+
+describe("products detail router", () => {
+  it("returns product by id", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.products.byId({ productId: 1 });
+
+    expect(result).not.toBeNull();
+    expect(result?.internalCode).toBe("BQ061");
+  });
+
+  it("returns product sales history", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.products.history({
+      productId: 1,
+      startDate: "2025-12-01",
+      endDate: "2025-12-31",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].date).toBe("2025-12-01");
+    expect(result[0].totalSales).toBe(3);
+  });
+
+  it("returns product channel summary", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.products.channelSummary({
+      productId: 1,
+      startDate: "2025-12-01",
+      endDate: "2025-12-31",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].channelName).toBe("Amazon");
+    expect(result[0].totalSales).toBe(10);
   });
 });
