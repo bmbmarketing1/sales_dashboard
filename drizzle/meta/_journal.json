@@ -22,6 +22,13 @@
       "when": 1765301181668,
       "tag": "0002_massive_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1765302003852,
+      "tag": "0003_silky_stellaris",
+      "breakpoints": true
     }
   ]
 }

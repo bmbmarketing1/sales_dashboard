@@ -62,6 +62,8 @@ vi.mock("./db", () => ({
     salesDeleted: 50,
     importsDeleted: 3,
   }),
+  getUniqueCategories: vi.fn().mockResolvedValue(["Brinquedos", "Bebê"]),
+  updateProductCategory: vi.fn().mockResolvedValue(undefined),
   getProductsInsights: vi.fn().mockResolvedValue({
     meetingGoal: [
       { productId: 1, internalCode: "BQ061", description: "Test Product 1", totalSales: 120, totalGoal: 100, percentage: 120, dailyGoal: 10 },
@@ -321,6 +323,19 @@ describe("sales.byPeriod router", () => {
     expect(result.daysInPeriod).toBe(3);
     expect(result.products[0].periodGoal).toBe(30);
     expect(result.products[0].totalSales).toBe(50);
+  });
+});
+
+describe("categories router", () => {
+  it("returns list of unique categories", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.categories.list();
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(result).toContain("Brinquedos");
+    expect(result).toContain("Bebê");
   });
 });
 

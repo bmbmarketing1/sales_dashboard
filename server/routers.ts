@@ -27,6 +27,8 @@ import {
   getProductChannelSummary,
   clearAllSalesData,
   getProductsInsights,
+  updateProductCategory,
+  getUniqueCategories,
 } from "./db";
 
 export const appRouter = router({
@@ -59,6 +61,75 @@ export const appRouter = router({
         ...result,
       };
     }),
+  }),
+
+  // Categories management
+  categories: router({
+    list: publicProcedure.query(async () => {
+      return getUniqueCategories();
+    }),
+    
+    import: protectedProcedure
+      .input(z.object({
+        fileBase64: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Decode base64 file
+        const buffer = Buffer.from(input.fileBase64, 'base64');
+        
+        // Parse XLS file
+        const workbook = XLSX.read(buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+        
+        // Find header row (look for "Código Interno" and "Categoria")
+        let headerRowIndex = -1;
+        let codeColIndex = -1;
+        let categoryColIndex = -1;
+        
+        for (let i = 0; i < Math.min(5, data.length); i++) {
+          const row = data[i];
+          if (Array.isArray(row)) {
+            for (let j = 0; j < row.length; j++) {
+              const cell = String(row[j] || '').toLowerCase();
+              if (cell.includes('código interno') || cell.includes('codigo interno')) {
+                codeColIndex = j;
+                headerRowIndex = i;
+              }
+              if (cell.includes('categoria')) {
+                categoryColIndex = j;
+              }
+            }
+          }
+          if (headerRowIndex >= 0) break;
+        }
+        
+        if (headerRowIndex < 0 || codeColIndex < 0 || categoryColIndex < 0) {
+          throw new Error('Formato inválido: não encontrou colunas Código Interno e Categoria');
+        }
+        
+        // Process data rows
+        let updatedCount = 0;
+        for (let i = headerRowIndex + 1; i < data.length; i++) {
+          const row = data[i];
+          if (!Array.isArray(row)) continue;
+          
+          const internalCode = String(row[codeColIndex] || '').trim();
+          const category = String(row[categoryColIndex] || '').trim();
+          
+          if (internalCode && category) {
+            await updateProductCategory(internalCode, category);
+            updatedCount++;
+          }
+        }
+        
+        return {
+          success: true,
+          updatedCount,
+        };
+      }),
   }),
 
   // Insights - products meeting vs not meeting goals

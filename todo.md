@@ -101,3 +101,11 @@
 
 - [x] Bug: Atualização de metas por marketplace não está funcionando (adicionado unique constraint)
 - [x] Adicionar ordenação de produtos por desempenho (melhor → pior)
+
+
+## Funcionalidade de Categorias
+
+- [x] Adicionar campo categoria na tabela de produtos
+- [x] Criar API para importar categorias da planilha XLS
+- [x] Adicionar botão de importar categorias no menu
+- [x] Adicionar filtro por categoria no dashboard

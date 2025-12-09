@@ -159,6 +159,26 @@ export async function getAllProducts(): Promise<Product[]> {
   return db.select().from(products).orderBy(products.internalCode);
 }
 
+export async function updateProductCategory(internalCode: string, category: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.update(products)
+    .set({ category })
+    .where(eq(products.internalCode, internalCode));
+}
+
+export async function getUniqueCategories(): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.selectDistinct({ category: products.category })
+    .from(products)
+    .where(sql`${products.category} IS NOT NULL AND ${products.category} != ''`);
+  
+  return result.map(r => r.category).filter((c): c is string => c !== null);
+}
+
 export async function getAllChannels(): Promise<Channel[]> {
   const db = await getDb();
   if (!db) return [];

@@ -9,6 +9,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProductRow } from "@/components/ProductRow";
 import { FileUpload } from "@/components/FileUpload";
+import { CategoryUpload } from "@/components/CategoryUpload";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
   Calendar as CalendarIcon, 
@@ -20,7 +22,8 @@ import {
   Trash2,
   AlertTriangle,
   Lightbulb,
-  Search
+  Search,
+  FolderTree
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -70,6 +73,10 @@ export default function Dashboard() {
   
   const [uploadOpen, setUploadOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [categoryUploadOpen, setCategoryUploadOpen] = useState(false);
+  
+  // Category filter state
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   
   // Calculate date range based on period
   const { startDate, endDate, daysInPeriod } = useMemo(() => {
@@ -175,6 +182,9 @@ export default function Dashboard() {
   
   const { data: importedFiles } = trpc.import.list.useQuery();
   
+  // Fetch categories
+  const { data: categories, refetch: refetchCategories } = trpc.categories.list.useQuery();
+  
   const handleImportSuccess = () => {
     refetchSales();
     utils.sales.dailyTotals.invalidate();
@@ -182,11 +192,21 @@ export default function Dashboard() {
     utils.import.list.invalidate();
   };
   
+  const handleCategoryImportSuccess = () => {
+    refetchCategories();
+    refetchSales();
+  };
+  
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     if (!periodData?.products) return [];
     
     let products = [...periodData.products];
+    
+    // Filter by category
+    if (selectedCategory !== "all") {
+      products = products.filter(p => p.category === selectedCategory);
+    }
     
     // Filter by search query
     if (searchQuery.trim()) {
@@ -207,7 +227,7 @@ export default function Dashboard() {
     }
     
     return products;
-  }, [periodData?.products, searchQuery, sortOrder]);
+  }, [periodData?.products, searchQuery, sortOrder, selectedCategory]);
   
   // Calculate totals from period data
   const totalSales = filteredProducts.reduce((sum, p) => sum + p.totalSales, 0);
@@ -294,10 +314,16 @@ export default function Dashboard() {
               <h1 className="text-xl font-bold text-gray-800">Sales Dashboard</h1>
               <p className="text-sm text-gray-500">Olá, {user?.name || "Usuário"}</p>
             </div>
-            <Button onClick={() => setUploadOpen(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              Importar Planilha
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setCategoryUploadOpen(true)}>
+                <FolderTree className="w-4 h-4 mr-2" />
+                Categorias
+              </Button>
+              <Button onClick={() => setUploadOpen(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Importar Planilha
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -384,7 +410,7 @@ export default function Dashboard() {
           </span>
         </div>
         
-        {/* Search bar and sort options */}
+        {/* Search bar, category filter and sort options */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -395,6 +421,23 @@ export default function Dashboard() {
               className="pl-10"
             />
           </div>
+          
+          {/* Category filter */}
+          {categories && categories.length > 0 && (
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <FolderTree className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas Categorias</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
           <div className="flex gap-2">
             <Button
               variant={sortOrder === "default" ? "default" : "outline"}
@@ -653,6 +696,12 @@ export default function Dashboard() {
         open={uploadOpen}
         onOpenChange={setUploadOpen}
         onSuccess={handleImportSuccess}
+      />
+      
+      <CategoryUpload
+        open={categoryUploadOpen}
+        onOpenChange={setCategoryUploadOpen}
+        onSuccess={handleCategoryImportSuccess}
       />
     </div>
   );
