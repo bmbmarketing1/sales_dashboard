@@ -1,0 +1,110 @@
+{
+  "query": "SELECT productId, channelId, dailyGoal FROM product_channel_goals WHERE dailyGoal > 0 LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT productId, channelId, dailyGoal FROM product_channel_goals WHERE dailyGoal > 0 LIMIT 20;",
+  "rows": [
+    {
+      "productId": "12",
+      "channelId": "1",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "12",
+      "channelId": "2",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "12",
+      "channelId": "3",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "12",
+      "channelId": "4",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "12",
+      "channelId": "5",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "1",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "2",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "3",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "4",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "5",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "1",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "2",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "3",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "4",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "9",
+      "channelId": "5",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "2",
+      "channelId": "1",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "2",
+      "channelId": "2",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "2",
+      "channelId": "3",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "2",
+      "channelId": "4",
+      "dailyGoal": "2"
+    },
+    {
+      "productId": "2",
+      "channelId": "5",
+      "dailyGoal": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "productId\tchannelId\tdailyGoal\n12\t1\t2\n12\t2\t2\n12\t3\t2\n12\t4\t2\n12\t5\t2\n9\t1\t2\n9\t2\t2\n9\t3\t2\n9\t4\t2\n9\t5\t2\n9\t1\t2\n9\t2\t2\n9\t3\t2\n9\t4\t2\n9\t5\t2\n2\t1\t2\n2\t2\t2\n2\t3\t2\n2\t4\t2\n2\t5\t2\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

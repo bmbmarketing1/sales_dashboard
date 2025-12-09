@@ -81,3 +81,9 @@
 - [x] Barra de pesquisa para filtrar produtos por nome/código
 - [x] Cards de resumo com totais do período (vendas, meta, atingimento)
 - [x] Produtos com vendas e metas calculadas para o período selecionado
+
+
+## Bug de Meta por Canal
+
+- [x] Corrigir meta por canal: deve ser multiplicada pelo período selecionado
+- [x] Inicializar metas padrão para todos os produtos/canais

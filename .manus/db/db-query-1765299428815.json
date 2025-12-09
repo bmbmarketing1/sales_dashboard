@@ -1,0 +1,322 @@
+{
+  "query": "SELECT * FROM product_channel_goals;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT * FROM product_channel_goals;",
+  "rows": [
+    {
+      "id": "1",
+      "productId": "12",
+      "channelId": "1",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 13:44:23",
+      "updatedAt": "2025-12-09 13:44:23"
+    },
+    {
+      "id": "2",
+      "productId": "12",
+      "channelId": "2",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 13:44:44",
+      "updatedAt": "2025-12-09 13:44:44"
+    },
+    {
+      "id": "3",
+      "productId": "12",
+      "channelId": "3",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 13:44:49",
+      "updatedAt": "2025-12-09 13:44:49"
+    },
+    {
+      "id": "4",
+      "productId": "12",
+      "channelId": "4",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 13:44:52",
+      "updatedAt": "2025-12-09 13:44:52"
+    },
+    {
+      "id": "5",
+      "productId": "12",
+      "channelId": "5",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 13:44:57",
+      "updatedAt": "2025-12-09 13:44:57"
+    },
+    {
+      "id": "6",
+      "productId": "9",
+      "channelId": "1",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:06:54",
+      "updatedAt": "2025-12-09 14:06:54"
+    },
+    {
+      "id": "7",
+      "productId": "9",
+      "channelId": "2",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:06:56",
+      "updatedAt": "2025-12-09 14:06:56"
+    },
+    {
+      "id": "8",
+      "productId": "9",
+      "channelId": "3",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:06:58",
+      "updatedAt": "2025-12-09 14:06:58"
+    },
+    {
+      "id": "9",
+      "productId": "9",
+      "channelId": "4",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:00",
+      "updatedAt": "2025-12-09 14:07:00"
+    },
+    {
+      "id": "10",
+      "productId": "9",
+      "channelId": "5",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:01",
+      "updatedAt": "2025-12-09 14:07:01"
+    },
+    {
+      "id": "11",
+      "productId": "9",
+      "channelId": "1",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:12",
+      "updatedAt": "2025-12-09 14:07:12"
+    },
+    {
+      "id": "12",
+      "productId": "9",
+      "channelId": "2",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:14",
+      "updatedAt": "2025-12-09 14:07:14"
+    },
+    {
+      "id": "13",
+      "productId": "9",
+      "channelId": "3",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:16",
+      "updatedAt": "2025-12-09 14:07:16"
+    },
+    {
+      "id": "14",
+      "productId": "9",
+      "channelId": "4",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:18",
+      "updatedAt": "2025-12-09 14:07:18"
+    },
+    {
+      "id": "15",
+      "productId": "9",
+      "channelId": "5",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:07:20",
+      "updatedAt": "2025-12-09 14:07:20"
+    },
+    {
+      "id": "16",
+      "productId": "2",
+      "channelId": "1",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:21:41",
+      "updatedAt": "2025-12-09 14:21:41"
+    },
+    {
+      "id": "17",
+      "productId": "2",
+      "channelId": "2",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:21:43",
+      "updatedAt": "2025-12-09 14:21:43"
+    },
+    {
+      "id": "18",
+      "productId": "2",
+      "channelId": "3",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:21:46",
+      "updatedAt": "2025-12-09 14:21:46"
+    },
+    {
+      "id": "19",
+      "productId": "2",
+      "channelId": "4",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:21:49",
+      "updatedAt": "2025-12-09 14:21:49"
+    },
+    {
+      "id": "20",
+      "productId": "2",
+      "channelId": "5",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 14:21:51",
+      "updatedAt": "2025-12-09 14:21:51"
+    },
+    {
+      "id": "21",
+      "productId": "2",
+      "channelId": "1",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 15:08:37",
+      "updatedAt": "2025-12-09 15:08:37"
+    },
+    {
+      "id": "22",
+      "productId": "2",
+      "channelId": "2",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 15:08:40",
+      "updatedAt": "2025-12-09 15:08:40"
+    },
+    {
+      "id": "23",
+      "productId": "2",
+      "channelId": "3",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 15:08:42",
+      "updatedAt": "2025-12-09 15:08:42"
+    },
+    {
+      "id": "24",
+      "productId": "2",
+      "channelId": "4",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 15:08:43",
+      "updatedAt": "2025-12-09 15:08:43"
+    },
+    {
+      "id": "25",
+      "productId": "2",
+      "channelId": "5",
+      "dailyGoal": "2",
+      "createdAt": "2025-12-09 15:08:43",
+      "updatedAt": "2025-12-09 15:08:43"
+    },
+    {
+      "id": "26",
+      "productId": "14",
+      "channelId": "1",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:07",
+      "updatedAt": "2025-12-09 15:11:07"
+    },
+    {
+      "id": "27",
+      "productId": "14",
+      "channelId": "2",
+      "dailyGoal": "0",
+      "createdAt": "2025-12-09 15:11:08",
+      "updatedAt": "2025-12-09 15:11:08"
+    },
+    {
+      "id": "28",
+      "productId": "14",
+      "channelId": "3",
+      "dailyGoal": "0",
+      "createdAt": "2025-12-09 15:11:09",
+      "updatedAt": "2025-12-09 15:11:09"
+    },
+    {
+      "id": "29",
+      "productId": "14",
+      "channelId": "4",
+      "dailyGoal": "0",
+      "createdAt": "2025-12-09 15:11:09",
+      "updatedAt": "2025-12-09 15:11:09"
+    },
+    {
+      "id": "30",
+      "productId": "14",
+      "channelId": "5",
+      "dailyGoal": "0",
+      "createdAt": "2025-12-09 15:11:10",
+      "updatedAt": "2025-12-09 15:11:10"
+    },
+    {
+      "id": "31",
+      "productId": "14",
+      "channelId": "2",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:18",
+      "updatedAt": "2025-12-09 15:11:18"
+    },
+    {
+      "id": "32",
+      "productId": "14",
+      "channelId": "3",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:20",
+      "updatedAt": "2025-12-09 15:11:20"
+    },
+    {
+      "id": "33",
+      "productId": "14",
+      "channelId": "4",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:21",
+      "updatedAt": "2025-12-09 15:11:21"
+    },
+    {
+      "id": "34",
+      "productId": "14",
+      "channelId": "5",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:23",
+      "updatedAt": "2025-12-09 15:11:23"
+    },
+    {
+      "id": "35",
+      "productId": "14",
+      "channelId": "2",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:39",
+      "updatedAt": "2025-12-09 15:11:39"
+    },
+    {
+      "id": "36",
+      "productId": "14",
+      "channelId": "3",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:40",
+      "updatedAt": "2025-12-09 15:11:40"
+    },
+    {
+      "id": "37",
+      "productId": "14",
+      "channelId": "4",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:41",
+      "updatedAt": "2025-12-09 15:11:41"
+    },
+    {
+      "id": "38",
+      "productId": "14",
+      "channelId": "5",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:41",
+      "updatedAt": "2025-12-09 15:11:41"
+    },
+    {
+      "id": "39",
+      "productId": "14",
+      "channelId": "2",
+      "dailyGoal": "5",
+      "createdAt": "2025-12-09 15:11:53",
+      "updatedAt": "2025-12-09 15:11:53"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductId\tchannelId\tdailyGoal\tcreatedAt\tupdatedAt\n1\t12\t1\t2\t2025-12-09 13:44:23\t2025-12-09 13:44:23\n2\t12\t2\t2\t2025-12-09 13:44:44\t2025-12-09 13:44:44\n3\t12\t3\t2\t2025-12-09 13:44:49\t2025-12-09 13:44:49\n4\t12\t4\t2\t2025-12-09 13:44:52\t2025-12-09 13:44:52\n5\t12\t5\t2\t2025-12-09 13:44:57\t2025-12-09 13:44:57\n6\t9\t1\t2\t2025-12-09 14:06:54\t2025-12-09 14:06:54\n7\t9\t2\t2\t2025-12-09 14:06:56\t2025-12-09 14:06:56\n8\t9\t3\t2\t2025-12-09 14:06:58\t2025-12-09 14:06:58\n9\t9\t4\t2\t2025-12-09 14:07:00\t2025-12-09 14:07:00\n10\t9\t5\t2\t2025-12-09 14:07:01\t2025-12-09 14:07:01\n11\t9\t1\t2\t2025-12-09 14:07:12\t2025-12-09 14:07:12\n12\t9\t2\t2\t2025-12-09 14:07:14\t2025-12-09 14:07:14\n13\t9\t3\t2\t2025-12-09 14:07:16\t2025-12-09 14:07:16\n14\t9\t4\t2\t2025-12-09 14:07:18\t2025-12-09 14:07:18\n15\t9\t5\t2\t2025-12-09 14:07:20\t2025-12-09 14:07:20\n16\t2\t1\t2\t2025-12-09 14:21:41\t2025-12-09 14:21:41\n17\t2\t2\t2\t2025-12-09 14:21:43\t2025-12-09 14:21:43\n18\t2\t3\t2\t2025-12-09 14:21:46\t2025-12-09 14:21:46\n19\t2\t4\t2\t2025-12-09 14:21:49\t2025-12-09 14:21:49\n20\t2\t5\t2\t2025-12-09 14:21:51\t2025-12-09 14:21:51\n21\t2\t1\t2\t2025-12-09 15:08:37\t2025-12-09 15:08:37\n22\t2\t2\t2\t2025-12-09 15:08:40\t2025-12-09 15:08:40\n23\t2\t3\t2\t2025-12-09 15:08:42\t2025-12-09 15:08:42\n24\t2\t4\t2\t2025-12-09 15:08:43\t2025-12-09 15:08:43\n25\t2\t5\t2\t2025-12-09 15:08:43\t2025-12-09 15:08:43\n26\t14\t1\t5\t2025-12-09 15:11:07\t2025-12-09 15:11:07\n27\t14\t2\t0\t2025-12-09 15:11:08\t2025-12-09 15:11:08\n28\t14\t3\t0\t2025-12-09 15:11:09\t2025-12-09 15:11:09\n29\t14\t4\t0\t2025-12-09 15:11:09\t2025-12-09 15:11:09\n30\t14\t5\t0\t2025-12-09 15:11:10\t2025-12-09 15:11:10\n31\t14\t2\t5\t2025-12-09 15:11:18\t2025-12-09 15:11:18\n32\t14\t3\t5\t2025-12-09 15:11:20\t2025-12-09 15:11:20\n33\t14\t4\t5\t2025-12-09 15:11:21\t2025-12-09 15:11:21\n34\t14\t5\t5\t2025-12-09 15:11:23\t2025-12-09 15:11:23\n35\t14\t2\t5\t2025-12-09 15:11:39\t2025-12-09 15:11:39\n36\t14\t3\t5\t2025-12-09 15:11:40\t2025-12-09 15:11:40\n37\t14\t4\t5\t2025-12-09 15:11:41\t2025-12-09 15:11:41\n38\t14\t5\t5\t2025-12-09 15:11:41\t2025-12-09 15:11:41\n39\t14\t2\t5\t2025-12-09 15:11:53\t2025-12-09 15:11:53\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

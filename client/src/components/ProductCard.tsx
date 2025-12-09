@@ -136,29 +136,33 @@ export function ProductCard({ product, onGoalUpdated, periodLabel }: ProductCard
           {/* Channel breakdown */}
           {expanded && (
             <div className="mt-3 space-y-2 pt-3 border-t">
-              {product.channelSales.map((channel) => (
-                <div 
-                  key={channel.channelId}
-                  className="flex items-center justify-between py-1"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{getChannelIcon(channel.channelName)}</span>
-                    <span className="text-sm text-gray-700">{channel.channelName}</span>
+              {product.channelSales.map((channel) => {
+                // Use periodGoal if available, otherwise use channelGoal
+                const goalToShow = channel.periodGoal ?? channel.channelGoal;
+                return (
+                  <div 
+                    key={channel.channelId}
+                    className="flex items-center justify-between py-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{getChannelIcon(channel.channelName)}</span>
+                      <span className="text-sm text-gray-700">{channel.channelName}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium">
+                        {channel.quantity}/{goalToShow || "-"}
+                      </span>
+                      {goalToShow > 0 && (
+                        <Thermometer 
+                          value={channel.quantity} 
+                          goal={goalToShow} 
+                          size="sm" 
+                        />
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">
-                      {channel.quantity}/{channel.channelGoal || "-"}
-                    </span>
-                    {channel.channelGoal > 0 && (
-                      <Thermometer 
-                        value={channel.quantity} 
-                        goal={channel.channelGoal} 
-                        size="sm" 
-                      />
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

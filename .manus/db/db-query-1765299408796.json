@@ -1,0 +1,31 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "channels"
+    },
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "daily_sales"
+    },
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "imported_files"
+    },
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "product_channel_goals"
+    },
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "products"
+    },
+    {
+      "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_CVZ7vhL7YTVF6G9KYmzLvT\n__drizzle_migrations\nchannels\ndaily_sales\nimported_files\nproduct_channel_goals\nproducts\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

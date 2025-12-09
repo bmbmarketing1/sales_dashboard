@@ -1,0 +1,31 @@
+{
+  "query": "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = DATABASE();",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = DATABASE();",
+  "rows": [
+    {
+      "TABLE_NAME": "__drizzle_migrations"
+    },
+    {
+      "TABLE_NAME": "users"
+    },
+    {
+      "TABLE_NAME": "channels"
+    },
+    {
+      "TABLE_NAME": "daily_sales"
+    },
+    {
+      "TABLE_NAME": "imported_files"
+    },
+    {
+      "TABLE_NAME": "product_channel_goals"
+    },
+    {
+      "TABLE_NAME": "products"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\n__drizzle_migrations\nusers\nchannels\ndaily_sales\nimported_files\nproduct_channel_goals\nproducts\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

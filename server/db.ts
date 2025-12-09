@@ -533,6 +533,38 @@ export async function getProductsInsights(startDate: string, endDate: string) {
 export async function initializeDatabase(): Promise<void> {
   await seedProducts();
   await seedChannels();
+  await seedProductChannelGoals();
+}
+
+// Seed default product-channel goals if they don't exist
+export async function seedProductChannelGoals(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const allProducts = await getAllProducts();
+  const allChannels = await getAllChannels();
+  const existingGoals = await getAllProductChannelGoals();
+  
+  // Create a set of existing product-channel combinations
+  const existingKeys = new Set(existingGoals.map(g => `${g.productId}-${g.channelId}`));
+  
+  // Default goal per channel (will sum to product's dailyGoal)
+  const defaultGoalPerChannel = 2;
+  
+  for (const product of allProducts) {
+    for (const channel of allChannels) {
+      const key = `${product.id}-${channel.id}`;
+      if (!existingKeys.has(key)) {
+        await db.insert(productChannelGoals).values({
+          productId: product.id,
+          channelId: channel.id,
+          dailyGoal: defaultGoalPerChannel,
+        }).onDuplicateKeyUpdate({
+          set: { dailyGoal: defaultGoalPerChannel },
+        });
+      }
+    }
+  }
 }
 
 

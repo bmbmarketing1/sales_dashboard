@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, internalCode FROM products ORDER BY id LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT id, internalCode FROM products ORDER BY id LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "internalCode": "BQ061"
+    },
+    {
+      "id": "2",
+      "internalCode": "BQ062"
+    },
+    {
+      "id": "3",
+      "internalCode": "BQ063"
+    },
+    {
+      "id": "4",
+      "internalCode": "BQ064"
+    },
+    {
+      "id": "5",
+      "internalCode": "BQ066"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tinternalCode\n1\tBQ061\n2\tBQ062\n3\tBQ063\n4\tBQ064\n5\tBQ066\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}
