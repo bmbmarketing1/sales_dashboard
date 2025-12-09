@@ -430,7 +430,11 @@ export default function ProductDetail() {
                     {salesHistory.map((day) => (
                       <tr key={day.date} className="border-b hover:bg-gray-50">
                         <td className="py-3 px-2">
-                          {format(new Date(day.date), "dd/MM/yyyy", { locale: ptBR })}
+                          {(() => {
+                            // Parse date string and add timezone offset to show correct date
+                            const [year, month, dayNum] = day.date.split('-').map(Number);
+                            return `${String(dayNum).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+                          })()}
                         </td>
                         <td className="text-center py-3 px-2 font-medium">
                           {day.totalSales}

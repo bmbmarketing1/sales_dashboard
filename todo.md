@@ -66,3 +66,9 @@
 - [x] Marketplace: manter apenas termômetros (remover gráfico)
 - [x] Adicionar seletor de datas específicas (além de períodos)
 - [x] Nova aba Insights: produtos batendo meta vs não batendo
+
+
+## Bug de Timezone (Correção Urgente)
+
+- [x] Corrigir timezone em todas as funções: usar horário de São Paulo (UTC-3)
+- [x] Data 01/12 está mostrando como 30/11 - corrigir conversão

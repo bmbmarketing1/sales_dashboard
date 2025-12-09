@@ -126,11 +126,31 @@ export default function Dashboard() {
   const totalGoals = salesData?.reduce((sum, p) => sum + p.dailyGoal, 0) || 0;
   const overallPercentage = totalGoals > 0 ? Math.round((totalSales / totalGoals) * 100) : 0;
   
-  // Prepare chart data
-  const chartData = dailyTotals?.map(d => ({
-    date: format(new Date(d.saleDate), "dd/MM"),
-    vendas: d.totalQuantity,
-  })) || [];
+  // Prepare chart data - parse date string directly to avoid timezone issues
+  const chartData = dailyTotals?.map(d => {
+    // saleDate comes as Date object from the API
+    const saleDate = d.saleDate as unknown;
+    let dateStr: string;
+    if (typeof saleDate === 'string') {
+      const parts = saleDate.split('-');
+      dateStr = `${parts[2]}/${parts[1]}`;
+    } else if (saleDate instanceof Date) {
+      // Handle Date object with timezone adjustment
+      const day = String(saleDate.getDate()).padStart(2, '0');
+      const month = String(saleDate.getMonth() + 1).padStart(2, '0');
+      dateStr = `${day}/${month}`;
+    } else {
+      // Fallback - try to parse as date
+      const date = new Date(String(saleDate));
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      dateStr = `${day}/${month}`;
+    }
+    return {
+      date: dateStr,
+      vendas: d.totalQuantity,
+    };
+  }) || [];
   
   if (authLoading) {
     return (
