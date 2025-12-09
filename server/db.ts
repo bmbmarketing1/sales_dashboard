@@ -365,6 +365,26 @@ export async function isFileAlreadyImported(fileDate: string): Promise<boolean> 
   return result.length > 0;
 }
 
+export async function clearAllSalesData(): Promise<{ salesDeleted: number; importsDeleted: number }> {
+  const db = await getDb();
+  if (!db) return { salesDeleted: 0, importsDeleted: 0 };
+  
+  // Count records before deletion
+  const salesCount = await db.select({ count: sql<number>`COUNT(*)` }).from(dailySales);
+  const importsCount = await db.select({ count: sql<number>`COUNT(*)` }).from(importedFiles);
+  
+  // Delete all sales records
+  await db.delete(dailySales);
+  
+  // Delete all import records
+  await db.delete(importedFiles);
+  
+  return {
+    salesDeleted: Number(salesCount[0]?.count || 0),
+    importsDeleted: Number(importsCount[0]?.count || 0),
+  };
+}
+
 // ============ INITIALIZATION ============
 
 export async function initializeDatabase(): Promise<void> {

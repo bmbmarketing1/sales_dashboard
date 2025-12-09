@@ -24,6 +24,7 @@ import {
   getProductById,
   getProductSalesHistory,
   getProductChannelSummary,
+  clearAllSalesData,
 } from "./db";
 
 export const appRouter = router({
@@ -43,6 +44,18 @@ export const appRouter = router({
     seed: protectedProcedure.mutation(async () => {
       await initializeDatabase();
       return { success: true };
+    }),
+  }),
+
+  // Data management
+  data: router({
+    // Clear all sales and import data
+    clearAll: protectedProcedure.mutation(async () => {
+      const result = await clearAllSalesData();
+      return {
+        success: true,
+        ...result,
+      };
     }),
   }),
 

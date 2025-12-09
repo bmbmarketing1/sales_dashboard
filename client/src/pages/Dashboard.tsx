@@ -15,8 +15,22 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { 
   LineChart, 
   Line, 
@@ -40,6 +54,19 @@ export default function Dashboard() {
     return format(today, "yyyy-MM-dd");
   });
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  
+  // Clear data mutation
+  const clearDataMutation = trpc.data.clearAll.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Dados limpos: ${result.salesDeleted} vendas e ${result.importsDeleted} importações removidas`);
+      handleImportSuccess();
+      setClearDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`Erro ao limpar dados: ${error.message}`);
+    },
+  });
   
   const utils = trpc.useUtils();
   
@@ -290,8 +317,45 @@ export default function Dashboard() {
           
           <TabsContent value="imports">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Histórico de Importações</CardTitle>
+                <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="gap-2">
+                      <Trash2 className="w-4 h-4" />
+                      Limpar Dados
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                        Limpar todos os dados?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação irá remover <strong>todas as vendas</strong> e <strong>todos os registros de importação</strong>.
+                        <br /><br />
+                        Os arquivos originais continuarão salvos no backup (S3), mas você precisará reimportar as planilhas.
+                        <br /><br />
+                        <strong>Esta ação não pode ser desfeita.</strong>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => clearDataMutation.mutate()}
+                        className="bg-red-600 hover:bg-red-700"
+                        disabled={clearDataMutation.isPending}
+                      >
+                        {clearDataMutation.isPending ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Limpando...</>
+                        ) : (
+                          "Sim, limpar tudo"
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardHeader>
               <CardContent>
                 {importedFiles && importedFiles.length > 0 ? (

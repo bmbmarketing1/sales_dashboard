@@ -58,6 +58,10 @@ vi.mock("./db", () => ({
   getProductChannelSummary: vi.fn().mockResolvedValue([
     { channelId: 1, channelName: "Amazon", totalSales: 10, daysWithSales: 3, dailyGoal: 2 },
   ]),
+  clearAllSalesData: vi.fn().mockResolvedValue({
+    salesDeleted: 50,
+    importsDeleted: 3,
+  }),
   getDailyTotals: vi.fn().mockResolvedValue([
     { saleDate: new Date("2025-12-01"), totalQuantity: 29 },
     { saleDate: new Date("2025-12-02"), totalQuantity: 40 },
@@ -257,5 +261,18 @@ describe("products detail router", () => {
     expect(result).toHaveLength(1);
     expect(result[0].channelName).toBe("Amazon");
     expect(result[0].totalSales).toBe(10);
+  });
+});
+
+describe("data management router", () => {
+  it("clears all sales data when authenticated", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.data.clearAll();
+
+    expect(result.success).toBe(true);
+    expect(result.salesDeleted).toBe(50);
+    expect(result.importsDeleted).toBe(3);
   });
 });

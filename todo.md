@@ -54,3 +54,8 @@
 - [x] Registrar vendas zero quando produto não aparece na planilha
 - [x] Meta diária do produto = soma automática das metas por canal
 - [x] Cálculo correto: meta total do período = soma metas × dias buscados
+
+## Funcionalidade de Limpar Dados
+
+- [x] API para limpar vendas e importações
+- [x] Botão de limpar dados na interface com confirmação
