@@ -289,6 +289,64 @@ export async function getProductSalesWithChannels(saleDate: string) {
   });
 }
 
+// ============ SALES BY PERIOD ============
+
+export async function getProductSalesWithChannelsByPeriod(startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return { products: [], daysInPeriod: 0 };
+  
+  const allProducts = await getAllProducts();
+  const allChannels = await getAllChannels();
+  const goals = await getAllProductChannelGoals();
+  
+  // Calculate days in period
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Get all sales in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
+  
+  const products = allProducts.map(product => {
+    const channelSales = allChannels.map(channel => {
+      // Sum all sales for this product/channel in the period
+      const channelTotal = sales
+        .filter(s => s.productId === product.id && s.channelId === channel.id)
+        .reduce((sum, s) => sum + s.quantity, 0);
+      
+      const goal = goals.find(g => g.productId === product.id && g.channelId === channel.id);
+      const dailyGoal = goal?.dailyGoal || 0;
+      
+      return {
+        channelId: channel.id,
+        channelName: channel.name,
+        quantity: channelTotal,
+        channelGoal: dailyGoal,
+        periodGoal: dailyGoal * daysInPeriod,
+      };
+    });
+    
+    const totalSales = channelSales.reduce((sum, cs) => sum + cs.quantity, 0);
+    
+    // Calculate daily goal as sum of channel goals
+    const calculatedDailyGoal = channelSales.reduce((sum, cs) => sum + cs.channelGoal, 0);
+    const effectiveDailyGoal = calculatedDailyGoal > 0 ? calculatedDailyGoal : product.dailyGoal;
+    const periodGoal = effectiveDailyGoal * daysInPeriod;
+    
+    return {
+      ...product,
+      dailyGoal: effectiveDailyGoal,
+      periodGoal,
+      totalSales,
+      channelSales,
+    };
+  });
+  
+  return { products, daysInPeriod };
+}
+
 // ============ MONTHLY STATS ============
 
 export async function getMonthlyAverages(year: number, month: number) {

@@ -15,6 +15,7 @@ import {
   getAllProductChannelGoals,
   upsertDailySale,
   getProductSalesWithChannels,
+  getProductSalesWithChannelsByPeriod,
   getMonthlyAverages,
   getDailyTotals,
   logImportedFile,
@@ -184,6 +185,16 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return getDailyTotals(input.year, input.month);
+      }),
+    
+    // Get sales for a date range (period)
+    byPeriod: publicProcedure
+      .input(z.object({
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getProductSalesWithChannelsByPeriod(input.startDate, input.endDate);
       }),
   }),
 

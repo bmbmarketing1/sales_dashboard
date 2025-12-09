@@ -72,3 +72,12 @@
 
 - [x] Corrigir timezone em todas as funções: usar horário de São Paulo (UTC-3)
 - [x] Data 01/12 está mostrando como 30/11 - corrigir conversão
+
+
+## Melhorias na Página Principal
+
+- [x] Seletor de período: 7 dias, 15 dias, 30 dias, mês atual
+- [x] Seletor de datas específicas: data início e data fim
+- [x] Barra de pesquisa para filtrar produtos por nome/código
+- [x] Cards de resumo com totais do período (vendas, meta, atingimento)
+- [x] Produtos com vendas e metas calculadas para o período selecionado

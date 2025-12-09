@@ -71,6 +71,25 @@ vi.mock("./db", () => ({
     ],
     daysInPeriod: 10,
   }),
+  getProductSalesWithChannelsByPeriod: vi.fn().mockResolvedValue({
+    products: [
+      {
+        id: 1,
+        externalId: 12916,
+        internalCode: "BQ061",
+        description: "COZINHA INFANTIL MODERNA 43 PCS",
+        dailyGoal: 10,
+        periodGoal: 30,
+        totalSales: 50,
+        channelSales: [
+          { channelId: 1, channelName: "Amazon", quantity: 20, channelGoal: 4, periodGoal: 12 },
+          { channelId: 2, channelName: "Magalu", quantity: 15, channelGoal: 3, periodGoal: 9 },
+          { channelId: 3, channelName: "Mercado Livre", quantity: 15, channelGoal: 3, periodGoal: 9 },
+        ],
+      },
+    ],
+    daysInPeriod: 3,
+  }),
   getDailyTotals: vi.fn().mockResolvedValue([
     { saleDate: new Date("2025-12-01"), totalQuantity: 29 },
     { saleDate: new Date("2025-12-02"), totalQuantity: 40 },
@@ -283,6 +302,25 @@ describe("data management router", () => {
     expect(result.success).toBe(true);
     expect(result.salesDeleted).toBe(50);
     expect(result.importsDeleted).toBe(3);
+  });
+});
+
+describe("sales.byPeriod router", () => {
+  it("returns products with period totals", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.sales.byPeriod({
+      startDate: "2025-12-01",
+      endDate: "2025-12-03",
+    });
+
+    expect(result).toHaveProperty("products");
+    expect(result).toHaveProperty("daysInPeriod");
+    expect(Array.isArray(result.products)).toBe(true);
+    expect(result.daysInPeriod).toBe(3);
+    expect(result.products[0].periodGoal).toBe(30);
+    expect(result.products[0].totalSales).toBe(50);
   });
 });
 

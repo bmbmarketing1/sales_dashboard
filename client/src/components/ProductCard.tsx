@@ -12,14 +12,17 @@ interface ChannelSale {
   channelName: string;
   quantity: number;
   channelGoal: number;
+  periodGoal?: number;
 }
 
 interface ProductWithSales {
   id: number;
-  externalId: number;
+  externalId?: number;
   internalCode: string;
   description: string;
+  name?: string;
   dailyGoal: number;
+  periodGoal?: number;
   totalSales: number;
   channelSales: ChannelSale[];
 }
@@ -27,9 +30,10 @@ interface ProductWithSales {
 interface ProductCardProps {
   product: ProductWithSales;
   onGoalUpdated?: () => void;
+  periodLabel?: string;
 }
 
-export function ProductCard({ product, onGoalUpdated }: ProductCardProps) {
+export function ProductCard({ product, onGoalUpdated, periodLabel }: ProductCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [goalEditorOpen, setGoalEditorOpen] = useState(false);
   

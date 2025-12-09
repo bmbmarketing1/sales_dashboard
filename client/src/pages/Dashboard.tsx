@@ -1,24 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProductCard } from "@/components/ProductCard";
 import { FileUpload } from "@/components/FileUpload";
 import { 
   Upload, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   TrendingUp, 
   Package, 
   Target,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
   RefreshCw,
   Trash2,
   AlertTriangle,
-  Lightbulb
+  Lightbulb,
+  Search
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -41,22 +43,89 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  BarChart,
-  Bar,
   Legend
 } from "recharts";
-import { format, parse, addDays, subDays } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getLoginUrl } from "@/const";
+import { cn } from "@/lib/utils";
+
+type PeriodType = "7d" | "15d" | "30d" | "month" | "custom";
 
 export default function Dashboard() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return format(today, "yyyy-MM-dd");
-  });
+  
+  // Period selection state
+  const [period, setPeriod] = useState<PeriodType>("30d");
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  const [startPickerOpen, setStartPickerOpen] = useState(false);
+  const [endPickerOpen, setEndPickerOpen] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  
   const [uploadOpen, setUploadOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  
+  // Calculate date range based on period
+  const { startDate, endDate, daysInPeriod } = useMemo(() => {
+    const today = new Date();
+    let start: Date;
+    let end: Date = today;
+    
+    if (period === "custom" && customStartDate && customEndDate) {
+      const days = Math.ceil((customEndDate.getTime() - customStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return {
+        startDate: format(customStartDate, "yyyy-MM-dd"),
+        endDate: format(customEndDate, "yyyy-MM-dd"),
+        daysInPeriod: days,
+      };
+    }
+    
+    switch (period) {
+      case "7d":
+        start = subDays(today, 6);
+        break;
+      case "15d":
+        start = subDays(today, 14);
+        break;
+      case "30d":
+        start = subDays(today, 29);
+        break;
+      case "month":
+        start = startOfMonth(today);
+        end = endOfMonth(today);
+        break;
+      default:
+        start = subDays(today, 29);
+    }
+    
+    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    return {
+      startDate: format(start, "yyyy-MM-dd"),
+      endDate: format(end, "yyyy-MM-dd"),
+      daysInPeriod: days,
+    };
+  }, [period, customStartDate, customEndDate]);
+  
+  // Handle custom date selection
+  const handleCustomDateSelect = (type: "start" | "end", date: Date | undefined) => {
+    if (type === "start") {
+      setCustomStartDate(date);
+      setStartPickerOpen(false);
+      if (date && customEndDate) {
+        setPeriod("custom");
+      }
+    } else {
+      setCustomEndDate(date);
+      setEndPickerOpen(false);
+      if (customStartDate && date) {
+        setPeriod("custom");
+      }
+    }
+  };
   
   // Clear data mutation
   const clearDataMutation = trpc.data.clearAll.useMutation({
@@ -81,76 +150,85 @@ export default function Dashboard() {
     }
   }, [isAuthenticated]);
   
-  // Fetch data
-  const { data: salesData, isLoading: salesLoading, refetch: refetchSales } = trpc.sales.byDate.useQuery(
-    { date: selectedDate },
-    { enabled: !!selectedDate }
+  // Fetch data by period
+  const { data: periodData, isLoading: salesLoading, refetch: refetchSales } = trpc.sales.byPeriod.useQuery(
+    { startDate, endDate },
+    { enabled: !!startDate && !!endDate }
   );
   
-  const currentDate = parse(selectedDate, "yyyy-MM-dd", new Date());
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
+  // Extract year and month for chart
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
   
   const { data: dailyTotals } = trpc.sales.dailyTotals.useQuery(
     { year, month },
-    { enabled: !!selectedDate }
-  );
-  
-  const { data: monthlyAverages } = trpc.sales.monthlyAverages.useQuery(
-    { year, month },
-    { enabled: !!selectedDate }
+    { enabled: true }
   );
   
   const { data: importedFiles } = trpc.import.list.useQuery();
   
-  // Navigation
-  const goToPreviousDay = () => {
-    const prev = subDays(currentDate, 1);
-    setSelectedDate(format(prev, "yyyy-MM-dd"));
-  };
-  
-  const goToNextDay = () => {
-    const next = addDays(currentDate, 1);
-    setSelectedDate(format(next, "yyyy-MM-dd"));
-  };
-  
   const handleImportSuccess = () => {
     refetchSales();
     utils.sales.dailyTotals.invalidate();
-    utils.sales.monthlyAverages.invalidate();
+    utils.sales.byPeriod.invalidate();
     utils.import.list.invalidate();
   };
   
-  // Calculate totals
-  const totalSales = salesData?.reduce((sum, p) => sum + p.totalSales, 0) || 0;
-  const totalGoals = salesData?.reduce((sum, p) => sum + p.dailyGoal, 0) || 0;
+  // Filter products by search query
+  const filteredProducts = useMemo(() => {
+    if (!periodData?.products) return [];
+    
+    if (!searchQuery.trim()) return periodData.products;
+    
+    const query = searchQuery.toLowerCase();
+    return periodData.products.filter(p => 
+      p.description.toLowerCase().includes(query) ||
+      p.internalCode.toLowerCase().includes(query)
+    );
+  }, [periodData?.products, searchQuery]);
+  
+  // Calculate totals from period data
+  const totalSales = filteredProducts.reduce((sum, p) => sum + p.totalSales, 0);
+  const totalGoals = filteredProducts.reduce((sum, p) => sum + p.periodGoal, 0);
   const overallPercentage = totalGoals > 0 ? Math.round((totalSales / totalGoals) * 100) : 0;
   
   // Prepare chart data - parse date string directly to avoid timezone issues
   const chartData = dailyTotals?.map(d => {
-    // saleDate comes as Date object from the API
     const saleDate = d.saleDate as unknown;
     let dateStr: string;
     if (typeof saleDate === 'string') {
       const parts = saleDate.split('-');
       dateStr = `${parts[2]}/${parts[1]}`;
     } else if (saleDate instanceof Date) {
-      // Handle Date object with timezone adjustment
       const day = String(saleDate.getDate()).padStart(2, '0');
-      const month = String(saleDate.getMonth() + 1).padStart(2, '0');
-      dateStr = `${day}/${month}`;
+      const monthNum = String(saleDate.getMonth() + 1).padStart(2, '0');
+      dateStr = `${day}/${monthNum}`;
     } else {
-      // Fallback - try to parse as date
       const date = new Date(String(saleDate));
       const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      dateStr = `${day}/${month}`;
+      const monthNum = String(date.getMonth() + 1).padStart(2, '0');
+      dateStr = `${day}/${monthNum}`;
     }
     return {
       date: dateStr,
       vendas: d.totalQuantity,
     };
   }) || [];
+  
+  // Period label for display
+  const getPeriodLabel = () => {
+    if (period === "custom" && customStartDate && customEndDate) {
+      return `${format(customStartDate, "dd/MM/yyyy")} - ${format(customEndDate, "dd/MM/yyyy")}`;
+    }
+    switch (period) {
+      case "7d": return "Últimos 7 dias";
+      case "15d": return "Últimos 15 dias";
+      case "30d": return "Últimos 30 dias";
+      case "month": return format(today, "MMMM yyyy", { locale: ptBR });
+      default: return "";
+    }
+  };
   
   if (authLoading) {
     return (
@@ -203,23 +281,98 @@ export default function Dashboard() {
       </header>
       
       <main className="container py-6">
-        {/* Date selector */}
-        <div className="flex items-center justify-center gap-4 mb-6">
-          <Button variant="outline" size="icon" onClick={goToPreviousDay}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border">
-            <Calendar className="w-5 h-5 text-gray-500" />
-            <span className="font-medium">
-              {format(currentDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-            </span>
+        {/* Period selector */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+          <div className="flex gap-1 bg-white rounded-lg border p-1">
+            {(["7d", "15d", "30d", "month"] as PeriodType[]).map((p) => (
+              <Button
+                key={p}
+                variant={period === p ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPeriod(p)}
+              >
+                {p === "7d" ? "7 dias" : p === "15d" ? "15 dias" : p === "30d" ? "30 dias" : "Mês"}
+              </Button>
+            ))}
           </div>
-          <Button variant="outline" size="icon" onClick={goToNextDay}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+          
+          <div className="flex items-center gap-2">
+            <Popover open={startPickerOpen} onOpenChange={setStartPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={period === "custom" ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !customStartDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4 mr-2" />
+                  {customStartDate ? format(customStartDate, "dd/MM/yyyy") : "Data início"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customStartDate}
+                  onSelect={(date) => handleCustomDateSelect("start", date)}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <span className="text-gray-400">até</span>
+            
+            <Popover open={endPickerOpen} onOpenChange={setEndPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={period === "custom" ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !customEndDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4 mr-2" />
+                  {customEndDate ? format(customEndDate, "dd/MM/yyyy") : "Data fim"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customEndDate}
+                  onSelect={(date) => handleCustomDateSelect("end", date)}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
           <Button variant="ghost" size="icon" onClick={() => refetchSales()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
+        </div>
+        
+        {/* Period label */}
+        <div className="text-center mb-4">
+          <span className="text-sm text-gray-500">
+            Período: <strong>{getPeriodLabel()}</strong> ({daysInPeriod} dias)
+          </span>
+        </div>
+        
+        {/* Search bar */}
+        <div className="flex justify-center mb-6">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Buscar produto por nome ou código..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
         
         {/* Summary cards */}
@@ -228,7 +381,7 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Vendas do Dia</p>
+                  <p className="text-sm text-gray-500">Vendas do Período</p>
                   <p className="text-3xl font-bold text-gray-800">{totalSales}</p>
                 </div>
                 <Package className="w-10 h-10 text-blue-500" />
@@ -240,7 +393,7 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Meta Total</p>
+                  <p className="text-sm text-gray-500">Meta do Período</p>
                   <p className="text-3xl font-bold text-gray-800">{totalGoals}</p>
                 </div>
                 <Target className="w-10 h-10 text-green-500" />
@@ -280,22 +433,35 @@ export default function Dashboard() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
-            ) : salesData && salesData.length > 0 ? (
+            ) : filteredProducts && filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {salesData.map((product) => (
+                {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
-                    product={product}
+                    product={{
+                      ...product,
+                      dailyGoal: product.periodGoal, // Use period goal for display
+                    }}
                     onGoalUpdated={handleImportSuccess}
+                    periodLabel={`${daysInPeriod} dias`}
                   />
                 ))}
               </div>
+            ) : searchQuery ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500">
+                    Nenhum produto encontrado para "{searchQuery}"
+                  </p>
+                </CardContent>
+              </Card>
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-500">
-                    Nenhum dado de vendas para esta data.
+                    Nenhum dado de vendas para este período.
                   </p>
                   <p className="text-sm text-gray-400 mt-2">
                     Importe uma planilha para começar.
