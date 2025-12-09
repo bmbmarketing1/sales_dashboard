@@ -116,3 +116,10 @@
 - [x] Criar API para importar novos produtos da planilha (Cód. ID, Cód. Interno, Descrição)
 - [x] Adicionar botão de importar produtos no menu
 - [x] Inicializar metas padrão para novos produtos em todos os canais
+
+
+## Alterações no Dashboard
+
+- [x] Remover aba "Gráfico Mensal"
+- [x] Criar página de visão por marketplace
+- [x] Adicionar botão/filtro para acessar visão de cada marketplace

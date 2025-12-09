@@ -25,7 +25,8 @@ import {
   Lightbulb,
   Search,
   FolderTree,
-  Plus
+  Plus,
+  Store
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -40,16 +41,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend
-} from "recharts";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getLoginUrl } from "@/const";
@@ -236,29 +227,6 @@ export default function Dashboard() {
   const totalSales = filteredProducts.reduce((sum, p) => sum + p.totalSales, 0);
   const totalGoals = filteredProducts.reduce((sum, p) => sum + p.periodGoal, 0);
   const overallPercentage = totalGoals > 0 ? Math.round((totalSales / totalGoals) * 100) : 0;
-  
-  // Prepare chart data - parse date string directly to avoid timezone issues
-  const chartData = dailyTotals?.map(d => {
-    const saleDate = d.saleDate as unknown;
-    let dateStr: string;
-    if (typeof saleDate === 'string') {
-      const parts = saleDate.split('-');
-      dateStr = `${parts[2]}/${parts[1]}`;
-    } else if (saleDate instanceof Date) {
-      const day = String(saleDate.getDate()).padStart(2, '0');
-      const monthNum = String(saleDate.getMonth() + 1).padStart(2, '0');
-      dateStr = `${day}/${monthNum}`;
-    } else {
-      const date = new Date(String(saleDate));
-      const day = String(date.getDate()).padStart(2, '0');
-      const monthNum = String(date.getMonth() + 1).padStart(2, '0');
-      dateStr = `${day}/${monthNum}`;
-    }
-    return {
-      date: dateStr,
-      vendas: d.totalQuantity,
-    };
-  }) || [];
   
   // Period label for display
   const getPeriodLabel = () => {
@@ -472,6 +440,41 @@ export default function Dashboard() {
           </div>
         </div>
         
+        {/* Marketplace buttons */}
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          <span className="text-sm text-gray-500 self-center mr-2">Ver por Marketplace:</span>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/marketplace/1">
+              <Store className="w-4 h-4 mr-1" />
+              Amazon
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/marketplace/2">
+              <Store className="w-4 h-4 mr-1" />
+              Magalu
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/marketplace/3">
+              <Store className="w-4 h-4 mr-1" />
+              Mercado Livre
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/marketplace/4">
+              <Store className="w-4 h-4 mr-1" />
+              Shopee
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/marketplace/5">
+              <Store className="w-4 h-4 mr-1" />
+              TikTok
+            </Link>
+          </Button>
+        </div>
+        
         {/* Summary cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
@@ -520,7 +523,6 @@ export default function Dashboard() {
         <Tabs defaultValue="products" className="space-y-4">
           <TabsList>
             <TabsTrigger value="products">Produtos</TabsTrigger>
-            <TabsTrigger value="chart">Gráfico Mensal</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
             <TabsTrigger value="imports">Importações</TabsTrigger>
           </TabsList>
@@ -566,39 +568,6 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-          
-          <TabsContent value="chart">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vendas do Mês</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {chartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={400}>
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="vendas" 
-                        stroke="#3b82f6" 
-                        strokeWidth={2}
-                        dot={{ fill: "#3b82f6" }}
-                        name="Vendas"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="py-12 text-center text-gray-500">
-                    Nenhum dado disponível para o gráfico
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
           
           <TabsContent value="insights">

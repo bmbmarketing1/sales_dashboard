@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import Insights from "./pages/Insights";
+import Marketplace from "./pages/Marketplace";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -15,6 +16,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/produto/:id"} component={ProductDetail} />
       <Route path={"/insights"} component={Insights} />
+      <Route path={"/marketplace/:channelId"} component={Marketplace} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

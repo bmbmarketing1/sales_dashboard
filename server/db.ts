@@ -594,6 +594,73 @@ export async function getProductsInsights(startDate: string, endDate: string) {
   return { meetingGoal, notMeetingGoal, daysInPeriod };
 }
 
+// ============ MARKETPLACE VIEW ============
+
+export async function getSalesByMarketplace(channelId: number, startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return { channel: null, products: [], daysInPeriod: 0 };
+  
+  const allProducts = await getAllProducts();
+  const allChannels = await getAllChannels();
+  const goals = await getAllProductChannelGoals();
+  
+  const channel = allChannels.find(c => c.id === channelId);
+  if (!channel) return { channel: null, products: [], daysInPeriod: 0 };
+  
+  // Calculate days in period
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Get all sales for this channel in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.channelId} = ${channelId} AND ${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
+  
+  // Aggregate sales by product
+  const salesByProduct = new Map<number, number>();
+  for (const sale of sales) {
+    const current = salesByProduct.get(sale.productId) || 0;
+    salesByProduct.set(sale.productId, current + sale.quantity);
+  }
+  
+  const products = allProducts.map(product => {
+    const goal = goals.find(g => g.productId === product.id && g.channelId === channelId);
+    const dailyGoal = goal?.dailyGoal || 0;
+    const periodGoal = dailyGoal * daysInPeriod;
+    const totalSales = salesByProduct.get(product.id) || 0;
+    const percentage = periodGoal > 0 ? Math.round((totalSales / periodGoal) * 100) : 0;
+    
+    return {
+      id: product.id,
+      externalId: product.externalId,
+      internalCode: product.internalCode,
+      description: product.description,
+      category: product.category,
+      dailyGoal,
+      periodGoal,
+      totalSales,
+      percentage,
+    };
+  });
+  
+  // Calculate channel totals
+  const totalSales = products.reduce((sum, p) => sum + p.totalSales, 0);
+  const totalGoal = products.reduce((sum, p) => sum + p.periodGoal, 0);
+  const overallPercentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
+  
+  return {
+    channel: {
+      ...channel,
+      totalSales,
+      totalGoal,
+      overallPercentage,
+    },
+    products,
+    daysInPeriod,
+  };
+}
+
 // ============ INITIALIZATION ============
 
 export async function initializeDatabase(): Promise<void> {

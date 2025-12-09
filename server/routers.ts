@@ -31,6 +31,7 @@ import {
   getUniqueCategories,
   upsertProduct,
   initializeProductChannelGoalsForProduct,
+  getSalesByMarketplace,
 } from "./db";
 
 export const appRouter = router({
@@ -227,6 +228,19 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return getProductsInsights(input.startDate, input.endDate);
+      }),
+  }),
+
+  // Marketplace view - sales by channel
+  marketplace: router({
+    byChannel: publicProcedure
+      .input(z.object({
+        channelId: z.number(),
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getSalesByMarketplace(input.channelId, input.startDate, input.endDate);
       }),
   }),
 
