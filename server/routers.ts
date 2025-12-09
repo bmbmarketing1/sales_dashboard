@@ -1,28 +1,258 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import * as XLSX from "xlsx";
+import { storagePut } from "./storage";
+import { nanoid } from "nanoid";
+import {
+  getAllProducts,
+  getAllChannels,
+  updateProductGoal,
+  updateChannelGoal,
+  upsertProductChannelGoal,
+  getAllProductChannelGoals,
+  upsertDailySale,
+  getProductSalesWithChannels,
+  getMonthlyAverages,
+  getDailyTotals,
+  logImportedFile,
+  getImportedFiles,
+  isFileAlreadyImported,
+  initializeDatabase,
+} from "./db";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
+      return { success: true } as const;
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // Initialize database with products and channels
+  init: router({
+    seed: protectedProcedure.mutation(async () => {
+      await initializeDatabase();
+      return { success: true };
+    }),
+  }),
+
+  // Products management
+  products: router({
+    list: publicProcedure.query(async () => {
+      return getAllProducts();
+    }),
+    
+    updateGoal: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+        dailyGoal: z.number().min(0),
+      }))
+      .mutation(async ({ input }) => {
+        await updateProductGoal(input.productId, input.dailyGoal);
+        return { success: true };
+      }),
+  }),
+
+  // Channels management
+  channels: router({
+    list: publicProcedure.query(async () => {
+      return getAllChannels();
+    }),
+    
+    updateGoal: protectedProcedure
+      .input(z.object({
+        channelId: z.number(),
+        dailyGoal: z.number().min(0),
+      }))
+      .mutation(async ({ input }) => {
+        await updateChannelGoal(input.channelId, input.dailyGoal);
+        return { success: true };
+      }),
+  }),
+
+  // Product-Channel goals
+  productChannelGoals: router({
+    list: publicProcedure.query(async () => {
+      return getAllProductChannelGoals();
+    }),
+    
+    update: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+        channelId: z.number(),
+        dailyGoal: z.number().min(0),
+      }))
+      .mutation(async ({ input }) => {
+        await upsertProductChannelGoal(input.productId, input.channelId, input.dailyGoal);
+        return { success: true };
+      }),
+  }),
+
+  // Sales data
+  sales: router({
+    // Get sales for a specific date with all products and channels
+    byDate: publicProcedure
+      .input(z.object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getProductSalesWithChannels(input.date);
+      }),
+    
+    // Get monthly averages
+    monthlyAverages: publicProcedure
+      .input(z.object({
+        year: z.number(),
+        month: z.number().min(1).max(12),
+      }))
+      .query(async ({ input }) => {
+        return getMonthlyAverages(input.year, input.month);
+      }),
+    
+    // Get daily totals for chart
+    dailyTotals: publicProcedure
+      .input(z.object({
+        year: z.number(),
+        month: z.number().min(1).max(12),
+      }))
+      .query(async ({ input }) => {
+        return getDailyTotals(input.year, input.month);
+      }),
+  }),
+
+  // File import
+  import: router({
+    // Get list of imported files
+    list: publicProcedure.query(async () => {
+      return getImportedFiles();
+    }),
+    
+    // Check if file date already imported
+    checkDate: publicProcedure
+      .input(z.object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        const exists = await isFileAlreadyImported(input.date);
+        return { exists };
+      }),
+    
+    // Process uploaded XLS file
+    processFile: protectedProcedure
+      .input(z.object({
+        fileName: z.string(),
+        fileBase64: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Validate filename format DD-MM-YYYY.xls
+        const fileNameMatch = input.fileName.match(/^(\d{2})-(\d{2})-(\d{4})\.xls$/i);
+        if (!fileNameMatch) {
+          throw new Error("Nome do arquivo deve ser no formato DD-MM-YYYY.xls");
+        }
+        
+        const [, day, month, year] = fileNameMatch;
+        const fileDate = `${year}-${month}-${day}`;
+        
+        // Check if already imported
+        const alreadyImported = await isFileAlreadyImported(fileDate);
+        if (alreadyImported) {
+          throw new Error(`Arquivo para a data ${day}/${month}/${year} já foi importado`);
+        }
+        
+        // Decode base64 and parse XLS
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        const workbook = XLSX.read(buffer, { type: "buffer" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
+        
+        // Get products and channels
+        const products = await getAllProducts();
+        const channels = await getAllChannels();
+        
+        // Create channel name to ID map
+        const channelMap: Record<string, number> = {};
+        channels.forEach(ch => {
+          channelMap[ch.name.toLowerCase()] = ch.id;
+        });
+        
+        // Find column indices from header row
+        const headerRow = data[0] as string[];
+        const columnIndices: Record<string, number> = {};
+        
+        headerRow.forEach((col, idx) => {
+          const colLower = (col || "").toString().toLowerCase().trim();
+          if (colLower.includes("cód") && colLower.includes("interno")) {
+            columnIndices["internalCode"] = idx;
+          } else if (colLower === "amazon") {
+            columnIndices["amazon"] = idx;
+          } else if (colLower === "magalu") {
+            columnIndices["magalu"] = idx;
+          } else if (colLower.includes("mercado") && colLower.includes("livre")) {
+            columnIndices["mercado livre"] = idx;
+          } else if (colLower === "shopee") {
+            columnIndices["shopee"] = idx;
+          } else if (colLower === "tiktok") {
+            columnIndices["tiktok"] = idx;
+          }
+        });
+        
+        let recordsImported = 0;
+        
+        // Process each data row
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i] as (string | number)[];
+          if (!row || row.length === 0) continue;
+          
+          const internalCode = row[columnIndices["internalCode"]]?.toString().trim();
+          if (!internalCode) continue;
+          
+          // Find product by internal code
+          const product = products.find(p => p.internalCode === internalCode);
+          if (!product) continue;
+          
+          // Process each channel
+          for (const [channelName, channelId] of Object.entries(channelMap)) {
+            const colIdx = columnIndices[channelName];
+            if (colIdx === undefined) continue;
+            
+            const quantity = parseInt(row[colIdx]?.toString() || "0", 10) || 0;
+            if (quantity > 0) {
+              await upsertDailySale(product.id, channelId, fileDate, quantity);
+              recordsImported++;
+            }
+          }
+        }
+        
+        // Upload file to S3 for backup
+        const s3Key = `sales-imports/${year}/${month}/${input.fileName}-${nanoid(8)}`;
+        const { url: s3Url } = await storagePut(s3Key, buffer, "application/vnd.ms-excel");
+        
+        // Log imported file
+        await logImportedFile({
+          fileName: input.fileName,
+          fileDate: new Date(fileDate),
+          s3Key,
+          s3Url,
+          recordsImported,
+          importedBy: ctx.user?.id,
+        });
+        
+        return {
+          success: true,
+          recordsImported,
+          fileDate,
+          s3Url,
+        };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
