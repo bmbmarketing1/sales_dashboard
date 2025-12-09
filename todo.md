@@ -87,3 +87,11 @@
 
 - [x] Corrigir meta por canal: deve ser multiplicada pelo período selecionado
 - [x] Inicializar metas padrão para todos os produtos/canais
+
+
+## Melhorias de Layout e UX
+
+- [x] Editar metas por marketplace: botão único "Salvar Todas" para atualizar todas as metas
+- [x] Menu de período: adicionar opção "1 dia" (ontem)
+- [x] Layout do dashboard: mudar de cards para linhas
+- [x] Sequência das colunas: Referência | Nome | Meta + Termômetro | Botões navegação | Ver por canal

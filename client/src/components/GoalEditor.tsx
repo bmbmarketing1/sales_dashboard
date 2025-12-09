@@ -15,12 +15,6 @@ interface Product {
   dailyGoal: number;
 }
 
-interface Channel {
-  id: number;
-  name: string;
-  dailyGoal: number;
-}
-
 interface GoalEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,9 +25,10 @@ interface GoalEditorProps {
 export function GoalEditor({ open, onOpenChange, product, onSuccess }: GoalEditorProps) {
   const [productGoal, setProductGoal] = useState(0);
   const [channelGoals, setChannelGoals] = useState<Record<number, number>>({});
+  const [isSavingAll, setIsSavingAll] = useState(false);
   
   const { data: channels } = trpc.channels.list.useQuery();
-  const { data: productChannelGoals } = trpc.productChannelGoals.list.useQuery();
+  const { data: productChannelGoals, refetch: refetchGoals } = trpc.productChannelGoals.list.useQuery();
   
   const updateProductGoal = trpc.products.updateGoal.useMutation({
     onSuccess: () => {
@@ -44,10 +39,6 @@ export function GoalEditor({ open, onOpenChange, product, onSuccess }: GoalEdito
   });
   
   const updateProductChannelGoal = trpc.productChannelGoals.update.useMutation({
-    onSuccess: () => {
-      toast.success("Meta por canal atualizada!");
-      onSuccess?.();
-    },
     onError: (error) => toast.error(error.message),
   });
   
@@ -74,14 +65,31 @@ export function GoalEditor({ open, onOpenChange, product, onSuccess }: GoalEdito
     });
   };
   
-  const handleSaveChannelGoal = (channelId: number) => {
-    if (!product) return;
-    updateProductChannelGoal.mutate({
-      productId: product.id,
-      channelId,
-      dailyGoal: channelGoals[channelId] || 0,
-    });
+  const handleSaveAllChannelGoals = async () => {
+    if (!product || !channels) return;
+    
+    setIsSavingAll(true);
+    try {
+      // Save all channel goals sequentially
+      for (const channel of channels) {
+        await updateProductChannelGoal.mutateAsync({
+          productId: product.id,
+          channelId: channel.id,
+          dailyGoal: channelGoals[channel.id] || 0,
+        });
+      }
+      toast.success("Todas as metas por canal foram atualizadas!");
+      await refetchGoals();
+      onSuccess?.();
+    } catch (error) {
+      toast.error("Erro ao salvar metas por canal");
+    } finally {
+      setIsSavingAll(false);
+    }
   };
+  
+  // Calculate sum of channel goals
+  const channelGoalsSum = Object.values(channelGoals).reduce((sum, val) => sum + (val || 0), 0);
   
   if (!product) return null;
   
@@ -95,10 +103,10 @@ export function GoalEditor({ open, onOpenChange, product, onSuccess }: GoalEdito
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="product" className="w-full">
+        <Tabs defaultValue="channels" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="product">Meta do Produto</TabsTrigger>
             <TabsTrigger value="channels">Metas por Canal</TabsTrigger>
+            <TabsTrigger value="product">Meta do Produto</TabsTrigger>
           </TabsList>
           
           <TabsContent value="product" className="space-y-4 mt-4">
@@ -134,31 +142,45 @@ export function GoalEditor({ open, onOpenChange, product, onSuccess }: GoalEdito
             {channels?.map((channel) => (
               <div key={channel.id} className="space-y-2">
                 <Label htmlFor={`channel-${channel.id}`}>{channel.name}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id={`channel-${channel.id}`}
-                    type="number"
-                    min="0"
-                    value={channelGoals[channel.id] || 0}
-                    onChange={(e) => setChannelGoals({
-                      ...channelGoals,
-                      [channel.id]: parseInt(e.target.value) || 0,
-                    })}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={() => handleSaveChannelGoal(channel.id)}
-                    disabled={updateProductChannelGoal.isPending}
-                  >
-                    {updateProductChannelGoal.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
+                <Input
+                  id={`channel-${channel.id}`}
+                  type="number"
+                  min="0"
+                  value={channelGoals[channel.id] || 0}
+                  onChange={(e) => setChannelGoals({
+                    ...channelGoals,
+                    [channel.id]: parseInt(e.target.value) || 0,
+                  })}
+                />
               </div>
             ))}
+            
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium">Soma das metas:</span>
+                <span className="text-lg font-bold text-primary">{channelGoalsSum} un/dia</span>
+              </div>
+              
+              <Button
+                onClick={handleSaveAllChannelGoals}
+                disabled={isSavingAll}
+                className="w-full"
+                size="lg"
+              >
+                {isSavingAll ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Todas as Metas
+                  </>
+                )}
+              </Button>
+            </div>
+            
             <p className="text-sm text-gray-500">
               Defina metas específicas para cada canal de vendas.
             </p>

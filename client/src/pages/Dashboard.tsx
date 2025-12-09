@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductRow } from "@/components/ProductRow";
 import { FileUpload } from "@/components/FileUpload";
 import { 
   Upload, 
@@ -50,7 +50,7 @@ import { ptBR } from "date-fns/locale";
 import { getLoginUrl } from "@/const";
 import { cn } from "@/lib/utils";
 
-type PeriodType = "7d" | "15d" | "30d" | "month" | "custom";
+type PeriodType = "1d" | "7d" | "15d" | "30d" | "month" | "custom";
 
 export default function Dashboard() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -84,6 +84,10 @@ export default function Dashboard() {
     }
     
     switch (period) {
+      case "1d":
+        start = subDays(today, 1);
+        end = subDays(today, 1);
+        break;
       case "7d":
         start = subDays(today, 6);
         break;
@@ -222,6 +226,7 @@ export default function Dashboard() {
       return `${format(customStartDate, "dd/MM/yyyy")} - ${format(customEndDate, "dd/MM/yyyy")}`;
     }
     switch (period) {
+      case "1d": return "Ontem";
       case "7d": return "Últimos 7 dias";
       case "15d": return "Últimos 15 dias";
       case "30d": return "Últimos 30 dias";
@@ -284,14 +289,14 @@ export default function Dashboard() {
         {/* Period selector */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
           <div className="flex gap-1 bg-white rounded-lg border p-1">
-            {(["7d", "15d", "30d", "month"] as PeriodType[]).map((p) => (
+            {(["1d", "7d", "15d", "30d", "month"] as PeriodType[]).map((p) => (
               <Button
                 key={p}
                 variant={period === p ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setPeriod(p)}
               >
-                {p === "7d" ? "7 dias" : p === "15d" ? "15 dias" : p === "30d" ? "30 dias" : "Mês"}
+                {p === "1d" ? "Ontem" : p === "7d" ? "7 dias" : p === "15d" ? "15 dias" : p === "30d" ? "30 dias" : "Mês"}
               </Button>
             ))}
           </div>
@@ -434,9 +439,9 @@ export default function Dashboard() {
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
             ) : filteredProducts && filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
                 {filteredProducts.map((product) => (
-                  <ProductCard
+                  <ProductRow
                     key={product.id}
                     product={{
                       ...product,
