@@ -29,6 +29,8 @@ import {
   getProductsInsights,
   updateProductCategory,
   getUniqueCategories,
+  upsertProduct,
+  initializeProductChannelGoalsForProduct,
 } from "./db";
 
 export const appRouter = router({
@@ -128,6 +130,90 @@ export const appRouter = router({
         return {
           success: true,
           updatedCount,
+        };
+      }),
+  }),
+
+  // Import new products from spreadsheet
+  importProducts: router({
+    upload: protectedProcedure
+      .input(z.object({
+        fileBase64: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Decode base64 file
+        const buffer = Buffer.from(input.fileBase64, 'base64');
+        
+        // Parse XLS file
+        const workbook = XLSX.read(buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+        
+        // Find header row (look for "Cód. ID", "Cód. Interno", "Descrição")
+        let headerRowIndex = -1;
+        let idColIndex = -1;
+        let codeColIndex = -1;
+        let descColIndex = -1;
+        
+        for (let i = 0; i < Math.min(5, data.length); i++) {
+          const row = data[i];
+          if (Array.isArray(row)) {
+            for (let j = 0; j < row.length; j++) {
+              const cell = String(row[j] || '').toLowerCase();
+              if (cell.includes('cód. id') || cell.includes('cod. id') || cell.includes('cód id')) {
+                idColIndex = j;
+              }
+              if (cell.includes('cód. interno') || cell.includes('cod. interno') || cell.includes('código interno')) {
+                codeColIndex = j;
+              }
+              if (cell.includes('descrição') || cell.includes('descricao')) {
+                descColIndex = j;
+              }
+            }
+            if (idColIndex !== -1 && codeColIndex !== -1 && descColIndex !== -1) {
+              headerRowIndex = i;
+              break;
+            }
+          }
+        }
+        
+        if (headerRowIndex === -1) {
+          throw new Error('Cabeçalho não encontrado. Certifique-se que a planilha tem colunas "Cód. ID", "Cód. Interno" e "Descrição"');
+        }
+        
+        // Process data rows
+        let addedCount = 0;
+        let updatedCount = 0;
+        
+        for (let i = headerRowIndex + 1; i < data.length; i++) {
+          const row = data[i];
+          if (!Array.isArray(row)) continue;
+          
+          const externalId = Number(row[idColIndex]) || 0;
+          const internalCode = String(row[codeColIndex] || '').trim();
+          const description = String(row[descColIndex] || '').trim();
+          
+          if (externalId && internalCode && description) {
+            const productId = await upsertProduct(externalId, internalCode, description);
+            
+            if (productId) {
+              // Initialize channel goals for new product
+              await initializeProductChannelGoalsForProduct(productId);
+              addedCount++;
+            }
+          }
+        }
+        
+        // Save to S3 for backup
+        const fileKey = `products/${nanoid()}-${input.fileName}`;
+        await storagePut(fileKey, buffer, 'application/vnd.ms-excel');
+        
+        return {
+          success: true,
+          addedCount,
+          fileKey,
         };
       }),
   }),

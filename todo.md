@@ -109,3 +109,10 @@
 - [x] Criar API para importar categorias da planilha XLS
 - [x] Adicionar botão de importar categorias no menu
 - [x] Adicionar filtro por categoria no dashboard
+
+
+## Funcionalidade de Importar Novos Produtos
+
+- [x] Criar API para importar novos produtos da planilha (Cód. ID, Cód. Interno, Descrição)
+- [x] Adicionar botão de importar produtos no menu
+- [x] Inicializar metas padrão para novos produtos em todos os canais

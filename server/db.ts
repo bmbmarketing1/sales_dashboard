@@ -159,6 +159,52 @@ export async function getAllProducts(): Promise<Product[]> {
   return db.select().from(products).orderBy(products.internalCode);
 }
 
+export async function upsertProduct(externalId: number, internalCode: string, description: string): Promise<number | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Insert or update product
+  await db.insert(products).values({
+    externalId,
+    internalCode,
+    description,
+    dailyGoal: 5, // Default goal
+  }).onDuplicateKeyUpdate({
+    set: { description },
+  });
+  
+  // Get the product ID
+  const result = await db.select({ id: products.id })
+    .from(products)
+    .where(eq(products.internalCode, internalCode))
+    .limit(1);
+  
+  return result[0]?.id ?? null;
+}
+
+export async function initializeProductChannelGoalsForProduct(productId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const allChannels = await getAllChannels();
+  
+  for (const channel of allChannels) {
+    // Check if goal already exists
+    const existing = await db.select()
+      .from(productChannelGoals)
+      .where(sql`${productChannelGoals.productId} = ${productId} AND ${productChannelGoals.channelId} = ${channel.id}`)
+      .limit(1);
+    
+    if (existing.length === 0) {
+      await db.insert(productChannelGoals).values({
+        productId,
+        channelId: channel.id,
+        dailyGoal: 2, // Default goal per channel
+      });
+    }
+  }
+}
+
 export async function updateProductCategory(internalCode: string, category: string): Promise<void> {
   const db = await getDb();
   if (!db) return;

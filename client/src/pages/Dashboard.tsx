@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ProductRow } from "@/components/ProductRow";
 import { FileUpload } from "@/components/FileUpload";
 import { CategoryUpload } from "@/components/CategoryUpload";
+import { ProductUpload } from "@/components/ProductUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
@@ -23,7 +24,8 @@ import {
   AlertTriangle,
   Lightbulb,
   Search,
-  FolderTree
+  FolderTree,
+  Plus
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -74,6 +76,7 @@ export default function Dashboard() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [categoryUploadOpen, setCategoryUploadOpen] = useState(false);
+  const [productUploadOpen, setProductUploadOpen] = useState(false);
   
   // Category filter state
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -315,6 +318,10 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500">Olá, {user?.name || "Usuário"}</p>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setProductUploadOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Produtos
+              </Button>
               <Button variant="outline" onClick={() => setCategoryUploadOpen(true)}>
                 <FolderTree className="w-4 h-4 mr-2" />
                 Categorias
@@ -702,6 +709,12 @@ export default function Dashboard() {
         open={categoryUploadOpen}
         onOpenChange={setCategoryUploadOpen}
         onSuccess={handleCategoryImportSuccess}
+      />
+      
+      <ProductUpload
+        open={productUploadOpen}
+        onOpenChange={setProductUploadOpen}
+        onSuccess={handleImportSuccess}
       />
     </div>
   );
