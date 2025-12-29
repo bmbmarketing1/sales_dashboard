@@ -49,7 +49,7 @@ export default function Marketplace() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const params = useParams<{ channelId: string }>();
   
-  const getMarketplaceLogoUrl = (channelName: string): string | undefined => {
+  const getMarketplaceLogo = (channelName: string) => {
     const logoMap: Record<string, string> = {
       "Amazon": "/marketplace-icons/amazon.svg",
       "Magalu": "/marketplace-icons/magalu.svg",
@@ -244,8 +244,8 @@ export default function Marketplace() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
-                  {getMarketplaceLogoUrl(channelName) ? (
-                    <img src={getMarketplaceLogoUrl(channelName)!} alt={channelName} className="w-6 h-6" />
+                  {getMarketplaceLogo(channelName) ? (
+                    <img src={getMarketplaceLogo(channelName)} alt={channelName} className="w-6 h-6" />
                   ) : (
                     <Store className="w-6 h-6 text-blue-600" />
                   )}
