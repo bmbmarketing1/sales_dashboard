@@ -159,3 +159,12 @@
 - [x] Criar API para importar URLs de imagens da planilha
 - [x] Criar botão "Fotos" na página inicial para upload da planilha
 - [x] Exibir imagem do produto na página de detalhes
+
+
+## Logos Customizados dos Marketplaces
+
+- [x] Copiar logos SVG para /client/public/marketplace-icons/
+- [x] Atualizar Dashboard para usar logos oficiais nos botões de filtro
+- [x] Atualizar página de Marketplace para usar logos oficiais no cabeçalho
+- [x] Atualizar página de detalhes do produto para usar logos oficiais nos cards e tabela
+- [x] Testar logos em todas as páginas

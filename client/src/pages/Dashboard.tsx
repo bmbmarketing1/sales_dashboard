@@ -471,31 +471,31 @@ export default function Dashboard() {
           <span className="text-sm text-gray-500 self-center mr-2">Ver por Marketplace:</span>
           <Button variant="outline" size="sm" asChild>
             <Link href="/marketplace/1">
-              <Store className="w-4 h-4 mr-1" />
+              <img src="/marketplace-icons/amazon.svg" alt="Amazon" className="w-4 h-4 mr-1" />
               Amazon
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href="/marketplace/2">
-              <Store className="w-4 h-4 mr-1" />
+              <img src="/marketplace-icons/magalu.svg" alt="Magalu" className="w-4 h-4 mr-1" />
               Magalu
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href="/marketplace/3">
-              <Store className="w-4 h-4 mr-1" />
+              <img src="/marketplace-icons/mercado-livre.svg" alt="Mercado Livre" className="w-4 h-4 mr-1" />
               Mercado Livre
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href="/marketplace/4">
-              <Store className="w-4 h-4 mr-1" />
+              <img src="/marketplace-icons/shopee.svg" alt="Shopee" className="w-4 h-4 mr-1" />
               Shopee
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href="/marketplace/5">
-              <Store className="w-4 h-4 mr-1" />
+              <img src="/marketplace-icons/tiktok.svg" alt="TikTok" className="w-4 h-4 mr-1" />
               TikTok
             </Link>
           </Button>

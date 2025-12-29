@@ -170,14 +170,19 @@ export default function ProductDetail() {
   }
   
   const getChannelIcon = (name: string) => {
-    const icons: Record<string, string> = {
-      "Amazon": "🛒",
-      "Magalu": "🏪",
-      "Mercado Livre": "🛍️",
-      "Shopee": "🧡",
-      "TikTok": "🎵",
+    const iconMap: Record<string, string> = {
+      "Amazon": "/marketplace-icons/amazon.svg",
+      "Magalu": "/marketplace-icons/magalu.svg",
+      "Mercado Livre": "/marketplace-icons/mercado-livre.svg",
+      "Shopee": "/marketplace-icons/shopee.svg",
+      "TikTok": "/marketplace-icons/tiktok.svg",
     };
-    return icons[name] || "📦";
+    const iconUrl = iconMap[name];
+    return iconUrl ? (
+      <img src={iconUrl} alt={name} className="w-8 h-8" />
+    ) : (
+      <Package className="w-8 h-8 text-gray-400" />
+    );
   };
   
   return (
@@ -399,7 +404,7 @@ export default function ProductDetail() {
                       key={channel.channelId}
                       className="flex flex-col items-center p-4 bg-gray-50 rounded-lg"
                     >
-                      <span className="text-3xl mb-2">{getChannelIcon(channel.channelName)}</span>
+                      <div className="mb-2">{getChannelIcon(channel.channelName)}</div>
                       <p className="font-medium text-sm mb-1">{channel.channelName}</p>
                       <Thermometer 
                         value={channel.totalSales} 
