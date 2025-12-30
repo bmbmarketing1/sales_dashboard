@@ -1,0 +1,22 @@
+{
+  "query": "SELECT p.internalCode, ps.crossdockingStock FROM products p LEFT JOIN product_stock ps ON p.id = ps.productId WHERE p.internalCode IN ('BL001', 'BL003', 'BL005') LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT p.internalCode, ps.crossdockingStock FROM products p LEFT JOIN product_stock ps ON p.id = ps.productId WHERE p.internalCode IN ('BL001', 'BL003', 'BL005') LIMIT 10;",
+  "rows": [
+    {
+      "internalCode": "BL001",
+      "crossdockingStock": "100"
+    },
+    {
+      "internalCode": "BL003",
+      "crossdockingStock": "100"
+    },
+    {
+      "internalCode": "BL005",
+      "crossdockingStock": "100"
+    }
+  ],
+  "messages": [],
+  "stdout": "internalCode\tcrossdockingStock\nBL001\t100\nBL003\t100\nBL005\t100\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

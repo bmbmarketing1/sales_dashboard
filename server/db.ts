@@ -403,6 +403,10 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     .from(dailySales)
     .where(sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
   
+  // Get all stock info
+  const allStocks = await db.select().from(productStock);
+  const allMarketplaceStocks = await db.select().from(marketplaceStock);
+  
   const products = allProducts.map(product => {
     const channelSales = allChannels.map(channel => {
       // Sum all sales for this product/channel in the period
@@ -431,6 +435,13 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     const effectiveDailyGoal = calculatedDailyGoal > 0 ? calculatedDailyGoal : product.dailyGoal;
     const periodGoal = effectiveDailyGoal * daysInPeriod;
     
+    // Get stock info
+    const stock = allStocks.find(s => s.productId === product.id);
+    const crossdockingStock = stock?.crossdockingStock || 0;
+    const totalStock = crossdockingStock + (allMarketplaceStocks
+      .filter(ms => ms.productId === product.id)
+      .reduce((sum, ms) => sum + ms.stock, 0) || 0);
+    
     return {
       ...product,
       dailyGoal: effectiveDailyGoal,
@@ -438,6 +449,8 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
       totalSales,
       totalRevenue,
       channelSales,
+      crossdockingStock,
+      totalStock,
     };
   });
   

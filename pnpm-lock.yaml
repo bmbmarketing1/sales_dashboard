@@ -118,6 +118,9 @@ importers:
       axios:
         specifier: ^1.12.0
         version: 1.12.2
+      cfb:
+        specifier: ^1.2.2
+        version: 1.2.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

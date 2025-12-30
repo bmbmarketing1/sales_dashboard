@@ -173,6 +173,8 @@
 - [x] Adicionar botão "Estoque" na página inicial para upload
 - [x] Adicionar coluna de estoque na linha de cada produto
 - [x] Corrigir modal de upload de estoque (adicionar botão Enviar e feedback)
+- [x] Testar e corrigir upload de estoque via navegador
+- [x] Corrigir retorno de dados de estoque na API
 - [ ] Criar página detalhada de estoque com insights
 - [ ] Implementar alertas de risco (estoque vs meta)
 - [ ] Implementar cálculo de dias de estoque estimado
