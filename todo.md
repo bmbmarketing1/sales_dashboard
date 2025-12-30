@@ -169,11 +169,11 @@
 
 - [x] Analisar planilha de estoque e entender estrutura (BL vs BQ)
 - [x] Criar tabelas de estoque no banco de dados (crossdocking e fulfillment)
-- [x] Criar API para importar estoque da planilha (em progresso)
+- [x] Criar API para importar estoque da planilha
 - [x] Adicionar botão "Estoque" na página inicial para upload
 - [x] Adicionar coluna de estoque na linha de cada produto
+- [x] Corrigir modal de upload de estoque (adicionar botão Enviar e feedback)
 - [ ] Criar página detalhada de estoque com insights
 - [ ] Implementar alertas de risco (estoque vs meta)
 - [ ] Implementar cálculo de dias de estoque estimado
 - [ ] Implementar taxa de cobertura de meta
-- [ ] Testar funcionalidade completa

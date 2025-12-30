@@ -11,11 +11,18 @@ interface StockUploadProps {
 
 export function StockUpload({ open, onOpenChange, onSuccess }: StockUploadProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const uploadMutation = trpc.stock.uploadStock.useMutation();
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
 
     setIsLoading(true);
     try {
@@ -24,11 +31,12 @@ export function StockUpload({ open, onOpenChange, onSuccess }: StockUploadProps)
         try {
           const base64 = (event.target?.result as string).split(",")[1];
           const result = await uploadMutation.mutateAsync({
-            fileName: file.name,
+            fileName: selectedFile.name,
             fileBase64: base64,
           });
 
           console.log(`${result.recordsImported} produtos com estoque importados`);
+          setSelectedFile(null);
           onOpenChange(false);
           onSuccess?.();
         } catch (error) {
@@ -37,7 +45,7 @@ export function StockUpload({ open, onOpenChange, onSuccess }: StockUploadProps)
           setIsLoading(false);
         }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(selectedFile);
     } catch (error) {
       console.error("Erro ao processar arquivo:", error);
       setIsLoading(false);
@@ -66,14 +74,31 @@ export function StockUpload({ open, onOpenChange, onSuccess }: StockUploadProps)
               file:bg-blue-50 file:text-blue-700
               hover:file:bg-blue-100"
           />
-          <Button
-            onClick={() => onOpenChange(false)}
-            variant="outline"
-            disabled={isLoading}
-            className="w-full"
-          >
-            Cancelar
-          </Button>
+          {selectedFile && (
+            <p className="text-sm text-gray-600">
+              Arquivo selecionado: <strong>{selectedFile.name}</strong>
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleUpload}
+              disabled={!selectedFile || isLoading}
+              className="flex-1"
+            >
+              {isLoading ? "Importando..." : "Enviar"}
+            </Button>
+            <Button
+              onClick={() => {
+                setSelectedFile(null);
+                onOpenChange(false);
+              }}
+              variant="outline"
+              disabled={isLoading}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
