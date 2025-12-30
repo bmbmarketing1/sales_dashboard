@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import Insights from "./pages/Insights";
 import Marketplace from "./pages/Marketplace";
+import StockAnalysis from "./pages/StockAnalysis";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -16,6 +17,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/produto/:id"} component={ProductDetail} />
       <Route path={"/insights"} component={Insights} />
+      <Route path={"/estoque"} component={StockAnalysis} />
       <Route path={"/marketplace/:channelId"} component={Marketplace} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

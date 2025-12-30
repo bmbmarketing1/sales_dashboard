@@ -442,15 +442,56 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
       .filter(ms => ms.productId === product.id)
       .reduce((sum, ms) => sum + ms.stock, 0) || 0);
     
+    // Calculate stock metrics
+    const avgSalesPerDay = totalSales / daysInPeriod;
+    const daysOfStockAvailable = avgSalesPerDay > 0 ? Math.round(totalStock / avgSalesPerDay) : 0;
+    const stockCoveragePercentage = periodGoal > 0 ? Math.round((totalStock / periodGoal) * 100) : 0;
+    
+    // Determine risk level
+    let riskLevel: 'green' | 'yellow' | 'red' = 'green';
+    if (stockCoveragePercentage < 50) {
+      riskLevel = 'red';
+    } else if (stockCoveragePercentage < 100) {
+      riskLevel = 'yellow';
+    }
+    
+    // Calculate marketplace distribution
+    const productMarketplaceStocks = allMarketplaceStocks.filter(ms => ms.productId === product.id);
+    const marketplaceDistribution = allChannels.map(channel => {
+      const channelStock = productMarketplaceStocks.find(ms => ms.channelId === channel.id);
+      const stock = channelStock?.stock || 0;
+      const percentage = totalStock > 0 ? Math.round((stock / totalStock) * 100) : 0;
+      return {
+        channelId: channel.id,
+        channelName: channel.name,
+        stock,
+        percentage,
+      };
+    }).filter(d => d.stock > 0);
+    
+    // Calculate recommended restocking (30 days of coverage)
+    const dailyGoal = periodGoal / daysInPeriod;
+    const reabastecimentoRecomendado = Math.max(0, Math.ceil(dailyGoal * 30 - totalStock));
+    
+    // Calculate forecast of stock depletion
+    const previsaoFaltaEstoque = avgSalesPerDay > 0 && totalStock > 0 ? Math.round(totalStock / avgSalesPerDay) : null;
+    
     return {
       ...product,
       dailyGoal: effectiveDailyGoal,
       periodGoal,
       totalSales,
       totalRevenue,
+      avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
       channelSales,
       crossdockingStock,
       totalStock,
+      daysOfStockAvailable,
+      stockCoveragePercentage,
+      riskLevel,
+      marketplaceDistribution,
+      reabastecimentoRecomendado,
+      previsaoFaltaEstoque,
     };
   });
   
@@ -1113,4 +1154,104 @@ export async function getAllProductsWithStock(startDate: string, endDate: string
   });
   
   return products;
+}
+
+
+// ============ STOCK METRICS ============
+
+export interface StockMetrics {
+  totalStock: number;
+  crossdockingStock: number;
+  daysOfStockAvailable: number;
+  stockCoveragePercentage: number;
+  riskLevel: 'green' | 'yellow' | 'red';
+  marketplaceDistribution: {
+    channelId: number;
+    channelName: string;
+    stock: number;
+    percentage: number;
+  }[];
+  reabastecimentoRecomendado: number;
+  previsaoFaltaEstoque: number | null; // dias até acabar
+}
+
+export async function calculateStockMetrics(
+  productId: number,
+  periodGoal: number,
+  avgSalesPerDay: number,
+  daysInPeriod: number
+): Promise<StockMetrics> {
+  const db = await getDb();
+  if (!db) return {
+    totalStock: 0,
+    crossdockingStock: 0,
+    daysOfStockAvailable: 0,
+    stockCoveragePercentage: 0,
+    riskLevel: 'red',
+    marketplaceDistribution: [],
+    reabastecimentoRecomendado: 0,
+    previsaoFaltaEstoque: null,
+  };
+
+  // Get stock info
+  const stock = await db.select()
+    .from(productStock)
+    .where(eq(productStock.productId, productId))
+    .limit(1);
+
+  const marketplaceStocks = await db.select()
+    .from(marketplaceStock)
+    .where(eq(marketplaceStock.productId, productId));
+
+  const crossdockingStock = stock[0]?.crossdockingStock || 0;
+  const totalStock = crossdockingStock + (marketplaceStocks.reduce((sum, ms) => sum + ms.stock, 0) || 0);
+
+  // Calculate days of stock available
+  const daysOfStockAvailable = avgSalesPerDay > 0 ? Math.round(totalStock / avgSalesPerDay) : 0;
+
+  // Calculate stock coverage percentage
+  const stockCoveragePercentage = periodGoal > 0 ? Math.round((totalStock / periodGoal) * 100) : 0;
+
+  // Determine risk level
+  let riskLevel: 'green' | 'yellow' | 'red' = 'green';
+  if (stockCoveragePercentage < 50) {
+    riskLevel = 'red';
+  } else if (stockCoveragePercentage < 100) {
+    riskLevel = 'yellow';
+  }
+
+  // Get channels for distribution
+  const channels = await getAllChannels();
+  const marketplaceDistribution = channels.map(channel => {
+    const channelStock = marketplaceStocks.find(ms => ms.channelId === channel.id);
+    const stock = channelStock?.stock || 0;
+    const percentage = totalStock > 0 ? Math.round((stock / totalStock) * 100) : 0;
+    return {
+      channelId: channel.id,
+      channelName: channel.name,
+      stock,
+      percentage,
+    };
+  }).filter(d => d.stock > 0);
+
+  // Calculate recommended restocking
+  const dailyGoal = periodGoal / daysInPeriod;
+  const reabastecimentoRecomendado = Math.max(0, Math.ceil(dailyGoal * 30 - totalStock)); // 30 dias de cobertura
+
+  // Calculate forecast of stock depletion
+  let previsaoFaltaEstoque: number | null = null;
+  if (avgSalesPerDay > 0 && totalStock > 0) {
+    previsaoFaltaEstoque = Math.round(totalStock / avgSalesPerDay);
+  }
+
+  return {
+    totalStock,
+    crossdockingStock,
+    daysOfStockAvailable,
+    stockCoveragePercentage,
+    riskLevel,
+    marketplaceDistribution,
+    reabastecimentoRecomendado,
+    previsaoFaltaEstoque,
+  };
 }

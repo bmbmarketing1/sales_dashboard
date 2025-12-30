@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Thermometer } from "./Thermometer";
 import { GoalEditor } from "./GoalEditor";
-import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign } from "lucide-react";
+import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Função para formatar valores monetários grandes de forma compacta
@@ -38,9 +38,16 @@ interface ProductWithSales {
   periodGoal?: number;
   totalSales: number;
   totalRevenue?: number;
+  avgSalesPerDay?: number;
   channelSales: ChannelSale[];
   totalStock?: number;
   crossdockingStock?: number;
+  daysOfStockAvailable?: number;
+  stockCoveragePercentage?: number;
+  riskLevel?: 'green' | 'yellow' | 'red';
+  marketplaceDistribution?: Array<{channelId: number; channelName: string; stock: number; percentage: number}>;
+  reabastecimentoRecomendado?: number;
+  previsaoFaltaEstoque?: number | null;
 }
 
 interface ProductRowProps {
@@ -68,6 +75,12 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
     return "border-l-red-500";
   };
   
+  const getStockRiskColor = () => {
+    if (product.riskLevel === 'red') return 'bg-red-50 border-l-red-500';
+    if (product.riskLevel === 'yellow') return 'bg-yellow-50 border-l-yellow-500';
+    return 'bg-white';
+  };
+  
   const getChannelIcon = (name: string) => {
     const icons: Record<string, string> = {
       "Amazon": "🛒",
@@ -79,11 +92,22 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
     return icons[name] || "📦";
   };
   
+  const getRiskMessage = () => {
+    if (product.riskLevel === 'red') {
+      return `Crítico: Estoque insuficiente para atingir a meta. Faltarão ${product.reabastecimentoRecomendado} unidades`;
+    }
+    if (product.riskLevel === 'yellow') {
+      return `Atenção: Estoque baixo. Recomendação: reabastecer ${product.reabastecimentoRecomendado} unidades`;
+    }
+    return `Adequado: ${product.daysOfStockAvailable} dias de estoque disponível`;
+  };
+  
   return (
     <>
       <div className={cn(
-        "bg-white rounded-lg border border-l-4 transition-all hover:shadow-md",
-        getBorderColor()
+        "rounded-lg border border-l-4 transition-all hover:shadow-md",
+        getBorderColor(),
+        getStockRiskColor()
       )}>
         {/* Main row */}
         <div className="flex items-center gap-4 p-3">
@@ -121,14 +145,25 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
             />
           </div>
           
-          {/* Stock */}
-          <div className="flex items-center gap-2 shrink-0 min-w-[80px]">
-            <div className="text-right">
-              <span className="text-sm font-semibold text-gray-700">
-                {product.totalStock || 0}
-              </span>
+          {/* Stock with Risk Indicator */}
+          <div className="flex items-center gap-2 shrink-0 min-w-[120px]">
+            <div className="text-right flex-1">
+              <div className="flex items-center gap-2 justify-end">
+                <span className="text-sm font-semibold text-gray-700">
+                  {product.totalStock || 0}
+                </span>
+                {product.riskLevel === 'red' && (
+                  <div className="w-2 h-2 rounded-full bg-red-500" title="Risco crítico" />
+                )}
+                {product.riskLevel === 'yellow' && (
+                  <div className="w-2 h-2 rounded-full bg-yellow-500" title="Atenção" />
+                )}
+                {product.riskLevel === 'green' && (
+                  <div className="w-2 h-2 rounded-full bg-green-500" title="Adequado" />
+                )}
+              </div>
               <div className="text-xs text-gray-400">
-                estoque
+                {product.daysOfStockAvailable ? `${product.daysOfStockAvailable}d` : 'estoque'}
               </div>
             </div>
           </div>
@@ -183,6 +218,35 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
             )}
           </Button>
         </div>
+        
+        {/* Risk Alert (if applicable) */}
+        {product.riskLevel && product.riskLevel !== 'green' && (
+          <div className={cn(
+            "px-3 py-2 border-t flex items-start gap-2",
+            product.riskLevel === 'red' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'
+          )}>
+            <AlertCircle className={cn(
+              "w-4 h-4 mt-0.5 shrink-0",
+              product.riskLevel === 'red' ? 'text-red-600' : 'text-yellow-600'
+            )} />
+            <div className={cn(
+              "text-xs",
+              product.riskLevel === 'red' ? 'text-red-700' : 'text-yellow-700'
+            )}>
+              <p className="font-semibold">{product.riskLevel === 'red' ? 'Alerta Crítico' : 'Atenção'}</p>
+              <p className="mt-1">{getRiskMessage()}</p>
+              {product.marketplaceDistribution && product.marketplaceDistribution.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {product.marketplaceDistribution.map(dist => (
+                    <span key={dist.channelId} className="bg-white bg-opacity-50 px-2 py-1 rounded">
+                      {dist.channelName}: {dist.stock} ({dist.percentage}%)
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* Channel breakdown (expanded) */}
         {expanded && (

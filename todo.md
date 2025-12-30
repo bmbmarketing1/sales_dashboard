@@ -179,3 +179,42 @@
 - [ ] Implementar alertas de risco (estoque vs meta)
 - [ ] Implementar cálculo de dias de estoque estimado
 - [ ] Implementar taxa de cobertura de meta
+
+
+## Análise de Estoque - Fase 2
+
+### Alertas de Risco
+- [x] Implementar alerta de risco de meta (estoque vs meta)
+- [x] Implementar alerta de dias de estoque baixo (<7 dias)
+- [x] Implementar alerta de excesso de estoque (>60 dias)
+- [x] Adicionar indicadores visuais (verde/amarelo/vermelho) no ProductRow
+
+### Métricas de Estoque
+- [x] Calcular dias de estoque estimado (estoque / vendas médias diárias)
+- [x] Calcular taxa de cobertura de meta (% do estoque que cobre a meta)
+- [x] Calcular distribuição de estoque por marketplace
+- [x] Calcular giro de estoque (produtos com/sem movimento)
+
+### Página de Análise Detalhada
+- [x] Criar página de análise de estoque
+- [x] Implementar filtros por categoria/marketplace
+- [x] Adicionar tabela com todas as métricas
+- [x] Implementar recomendações de reabastecimento
+
+### Dashboard de Estoque por Marketplace
+- [ ] Criar visualização de saúde do estoque por canal
+- [ ] Mostrar distribuição de estoque vs demanda por marketplace
+- [ ] Implementar comparativo de performance
+
+### Visualizações e Gráficos
+- [ ] Gráfico de estoque vs meta vs vendas reais
+- [ ] Gráfico de tendência de estoque ao longo do tempo
+- [ ] Gráfico de distribuição por marketplace
+- [ ] Heatmap de risco de produtos
+
+### Funcionalidades Adicionais
+- [ ] Previsão de falta de estoque (quando vai acabar)
+- [ ] Recomendação automática de quantidade para reabastecer
+- [ ] Simulador de cenários (e se aumentar meta em 20%?)
+- [ ] Histórico de variação de estoque
+- [ ] Análise de sazonalidade
