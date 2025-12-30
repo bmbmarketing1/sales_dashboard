@@ -556,24 +556,30 @@ export default function Marketplace() {
                   <CardTitle className="text-sm">Vendas diárias no {productHistory.channel?.name || ''}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={(productHistory.history || []).map((h: { date: string; quantity: number }) => ({
-                        ...h,
-                        date: h.date.split('-').slice(1).reverse().join('/'),
-                      }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
-                        <YAxis />
-                        <Tooltip />
-                        <ReferenceLine y={productHistory.dailyGoal} stroke="#22c55e" strokeDasharray="5 5" label={{ value: 'Meta', position: 'right' }} />
-                        <Bar 
-                          dataKey="quantity" 
-                          fill="#3b82f6"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="h-64 w-full">
+                    {productHistory.history && productHistory.history.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={productHistory.history.map((h: { date: string; quantity: number }) => ({
+                          ...h,
+                          date: h.date.split('-').slice(1).reverse().join('/'),
+                        }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+                          <YAxis />
+                          <Tooltip />
+                          <ReferenceLine y={productHistory.dailyGoal} stroke="#22c55e" strokeDasharray="5 5" label={{ value: 'Meta', position: 'right' }} />
+                          <Bar 
+                            dataKey="quantity" 
+                            fill="#3b82f6"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        Sem dados disponíveis
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

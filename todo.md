@@ -159,3 +159,9 @@
 - [x] Criar API para importar URLs de imagens da planilha
 - [x] Criar botão "Fotos" na página inicial para upload da planilha
 - [x] Exibir imagem do produto na página de detalhes
+
+
+## Correção de Erros - removeChild
+
+- [x] Corrigir erro de removeChild nas abas de Categoria, Marketplace e Produtos
+- [x] Testar todas as páginas após correção
