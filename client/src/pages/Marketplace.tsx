@@ -48,17 +48,6 @@ type SortOrder = "default" | "best" | "worst";
 export default function Marketplace() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const params = useParams<{ channelId: string }>();
-  
-  const getMarketplaceLogo = (channelName: string) => {
-    const logoMap: Record<string, string> = {
-      "Amazon": "/marketplace-icons/amazon.svg",
-      "Magalu": "/marketplace-icons/magalu.svg",
-      "Mercado Livre": "/marketplace-icons/mercado-livre.svg",
-      "Shopee": "/marketplace-icons/shopee.svg",
-      "TikTok": "/marketplace-icons/tiktok.svg",
-    };
-    return logoMap[channelName];
-  };
   const channelId = parseInt(params.channelId || "1");
   
   // Period selection state
@@ -244,11 +233,7 @@ export default function Marketplace() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
-                  {getMarketplaceLogo(channelName) ? (
-                    <img src={getMarketplaceLogo(channelName)} alt={channelName} className="w-6 h-6" />
-                  ) : (
-                    <Store className="w-6 h-6 text-blue-600" />
-                  )}
+                  <Store className="w-6 h-6 text-blue-600" />
                   {channelName}
                 </h1>
                 <p className="text-sm text-gray-500">Visão por Marketplace</p>
