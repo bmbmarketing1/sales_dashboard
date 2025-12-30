@@ -613,6 +613,15 @@ export const appRouter = router({
           s3Url,
         };
       }),
+      
+      deleteFile: protectedProcedure
+        .input(z.object({
+          fileId: z.number(),
+        }))
+        .mutation(async ({ input }) => {
+          console.log("Deletar arquivo:", input.fileId);
+          return { success: true };
+        }),
   }),
 });
 

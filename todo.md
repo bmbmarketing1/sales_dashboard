@@ -47,7 +47,6 @@
 - [x] Tabela de vendas por marketplace com atingimento de meta
 - [x] Indicador visual de dias que atingiram/não atingiram a meta
 
-
 ## Correções de Bugs
 
 - [x] Corrigir timezone: data mostra 1 dia antes (ex: 01/12 mostra como 30/11)
@@ -67,12 +66,10 @@
 - [x] Adicionar seletor de datas específicas (além de períodos)
 - [x] Nova aba Insights: produtos batendo meta vs não batendo
 
-
 ## Bug de Timezone (Correção Urgente)
 
 - [x] Corrigir timezone em todas as funções: usar horário de São Paulo (UTC-3)
 - [x] Data 01/12 está mostrando como 30/11 - corrigir conversão
-
 
 ## Melhorias na Página Principal
 
@@ -82,12 +79,10 @@
 - [x] Cards de resumo com totais do período (vendas, meta, atingimento)
 - [x] Produtos com vendas e metas calculadas para o período selecionado
 
-
 ## Bug de Meta por Canal
 
 - [x] Corrigir meta por canal: deve ser multiplicada pelo período selecionado
 - [x] Inicializar metas padrão para todos os produtos/canais
-
 
 ## Melhorias de Layout e UX
 
@@ -96,12 +91,10 @@
 - [x] Layout do dashboard: mudar de cards para linhas
 - [x] Sequência das colunas: Referência | Nome | Meta + Termômetro | Botões navegação | Ver por canal
 
-
 ## Correções e Novas Funcionalidades
 
 - [x] Bug: Atualização de metas por marketplace não está funcionando (adicionado unique constraint)
 - [x] Adicionar ordenação de produtos por desempenho (melhor → pior)
-
 
 ## Funcionalidade de Categorias
 
@@ -110,13 +103,11 @@
 - [x] Adicionar botão de importar categorias no menu
 - [x] Adicionar filtro por categoria no dashboard
 
-
 ## Funcionalidade de Importar Novos Produtos
 
 - [x] Criar API para importar novos produtos da planilha (Cód. ID, Cód. Interno, Descrição)
 - [x] Adicionar botão de importar produtos no menu
 - [x] Inicializar metas padrão para novos produtos em todos os canais
-
 
 ## Alterações no Dashboard
 
@@ -124,13 +115,11 @@
 - [x] Criar página de visão por marketplace
 - [x] Adicionar botão/filtro para acessar visão de cada marketplace
 
-
 ## Melhorias na Página de Marketplace e Modelos de Planilha
 
 - [x] Adicionar gráfico de 30 dias na página de marketplace ao clicar em "Ver detalhes"
 - [x] Adicionar modelo de planilha para download no botão de Categorias
 - [x] Adicionar modelo de planilha para download no botão de Importar Planilha
-
 
 ## Faturamento e Melhorias
 
@@ -143,14 +132,12 @@
 - [x] Remover modal de detalhes da página de marketplace
 - [x] Distribuir faturamento proporcionalmente entre canais com vendas
 
-
 ## Melhorias Solicitadas - Dezembro 2025
 
 - [x] Adicionar filtro por categoria na aba Insights
 - [x] Restaurar modal de histórico na página de marketplace
 - [x] Juntar card de Atingimento com Meta do Período (similar ao SKUs com Vendas)
 - [x] Ajustar formatação do faturamento para suportar valores acima de R$ 100.000.000,00 (mil, mi, bi)
-
 
 ## Imagens de Produtos
 
@@ -160,8 +147,12 @@
 - [x] Criar botão "Fotos" na página inicial para upload da planilha
 - [x] Exibir imagem do produto na página de detalhes
 
-
 ## Correção de Erros - removeChild
 
 - [x] Corrigir erro de removeChild nas abas de Categoria, Marketplace e Produtos
 - [x] Testar todas as páginas após correção
+
+## Melhorias de UX - Janeiro 2026
+
+- [x] Adicionar média de vendas por período na linha de cada produto (ex: "Média 12/dia")
+- [x] Adicionar botão "X" para deletar planilhas individualmente na aba Importações

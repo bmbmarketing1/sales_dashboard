@@ -28,6 +28,7 @@ import {
   FolderTree,
   Plus,
   Store,
+  X as XIcon,
   DollarSign,
   Image,
   ShoppingBag
@@ -84,6 +85,19 @@ export default function Dashboard() {
   
   const [uploadOpen, setUploadOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  
+  // Query para arquivos importados
+  const { data: importedFiles, refetch: refetchImportedFiles } = trpc.import.list.useQuery();
+  
+  // Mutation para deletar arquivo individual
+  const deleteFileMutation = trpc.import.deleteFile.useMutation({
+    onSuccess: () => {
+      refetchImportedFiles();
+    },
+    onError: (error: any) => {
+      console.error("Erro ao deletar arquivo:", error);
+    },
+  });
   const [categoryUploadOpen, setCategoryUploadOpen] = useState(false);
   const [productUploadOpen, setProductUploadOpen] = useState(false);
   const [imageUploadOpen, setImageUploadOpen] = useState(false);
@@ -192,8 +206,6 @@ export default function Dashboard() {
     { year, month },
     { enabled: true }
   );
-  
-  const { data: importedFiles } = trpc.import.list.useQuery();
   
   // Fetch categories
   const { data: categories, refetch: refetchCategories } = trpc.categories.list.useQuery();
@@ -691,16 +703,27 @@ export default function Dashboard() {
                     {importedFiles.map((file) => (
                       <div 
                         key={file.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                       >
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{file.fileName}</p>
                           <p className="text-sm text-gray-500">
                             {file.recordsImported} registros importados
                           </p>
                         </div>
-                        <div className="text-right text-sm text-gray-500">
-                          {format(new Date(file.importedAt), "dd/MM/yyyy HH:mm")}
+                        <div className="flex items-center gap-3">
+                          <div className="text-right text-sm text-gray-500">
+                            {format(new Date(file.importedAt), "dd/MM/yyyy HH:mm")}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => deleteFileMutation.mutate({ fileId: file.id })}
+                            disabled={deleteFileMutation.isPending}
+                          >
+                            <XIcon className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}

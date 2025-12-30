@@ -45,11 +45,15 @@ interface ProductRowProps {
   product: ProductWithSales;
   onGoalUpdated?: () => void;
   periodLabel?: string;
+  periodDays?: number;
 }
 
-export function ProductRow({ product, onGoalUpdated, periodLabel }: ProductRowProps) {
+export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 30 }: ProductRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [goalEditorOpen, setGoalEditorOpen] = useState(false);
+  
+  // Calcular média de vendas por dia
+  const averageSalesPerDay = periodDays > 0 ? product.totalSales / periodDays : 0;
   
   const percentage = product.dailyGoal > 0 
     ? Math.min((product.totalSales / product.dailyGoal) * 100, 100) 
@@ -104,6 +108,9 @@ export function ProductRow({ product, onGoalUpdated, periodLabel }: ProductRowPr
               <span className="text-sm text-gray-500 ml-1">
                 / {product.dailyGoal}
               </span>
+              <div className="text-xs text-gray-400 mt-1">
+                Média {(product.totalSales / periodDays).toFixed(1)}/dia
+              </div>
             </div>
             <Thermometer 
               value={product.totalSales} 
