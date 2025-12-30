@@ -156,3 +156,10 @@
 
 - [x] Adicionar média de vendas por período na linha de cada produto (ex: "Média 12/dia")
 - [x] Adicionar botão "X" para deletar planilhas individualmente na aba Importações
+
+
+## Correção - Delete de Planilhas
+
+- [x] Implementar função de delete no banco de dados (deletar arquivo e vendas associadas)
+- [x] Implementar mutation de delete no backend (routers.ts)
+- [x] Testar funcionalidade de delete na interface

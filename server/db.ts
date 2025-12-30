@@ -1,5 +1,6 @@
 import { eq, and, sql, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { format } from "date-fns";
 import { 
   InsertUser, users, 
   products, InsertProduct, Product,
@@ -515,6 +516,33 @@ export async function isFileAlreadyImported(fileDate: string): Promise<boolean> 
     .limit(1);
   
   return result.length > 0;
+}
+
+export async function deleteImportedFile(fileId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  try {
+    const file = await db.select()
+      .from(importedFiles)
+      .where(eq(importedFiles.id, fileId))
+      .limit(1);
+    
+    if (file.length === 0) return false;
+    
+    const fileDate = format(file[0].fileDate, "yyyy-MM-dd");
+    
+    await db.delete(dailySales)
+      .where(sql`DATE(${dailySales.saleDate}) = ${fileDate}`);
+    
+    await db.delete(importedFiles)
+      .where(eq(importedFiles.id, fileId));
+    
+    return true;
+  } catch (error) {
+    console.error("Error deleting imported file:", error);
+    return false;
+  }
 }
 
 export async function clearAllSalesData(): Promise<{ salesDeleted: number; importsDeleted: number }> {

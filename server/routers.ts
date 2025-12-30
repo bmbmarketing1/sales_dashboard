@@ -34,6 +34,7 @@ import {
   initializeProductChannelGoalsForProduct,
   getSalesByMarketplace,
   getProductChannelHistory,
+  deleteImportedFile,
 } from "./db";
 
 export const appRouter = router({
@@ -619,7 +620,10 @@ export const appRouter = router({
           fileId: z.number(),
         }))
         .mutation(async ({ input }) => {
-          console.log("Deletar arquivo:", input.fileId);
+          const success = await deleteImportedFile(input.fileId);
+          if (!success) {
+            throw new Error("Falha ao deletar arquivo");
+          }
           return { success: true };
         }),
   }),
