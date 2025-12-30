@@ -163,3 +163,17 @@
 - [x] Implementar função de delete no banco de dados (deletar arquivo e vendas associadas)
 - [x] Implementar mutation de delete no backend (routers.ts)
 - [x] Testar funcionalidade de delete na interface
+
+
+## Sistema de Estoque
+
+- [x] Analisar planilha de estoque e entender estrutura (BL vs BQ)
+- [x] Criar tabelas de estoque no banco de dados (crossdocking e fulfillment)
+- [x] Criar API para importar estoque da planilha (em progresso)
+- [x] Adicionar botão "Estoque" na página inicial para upload
+- [x] Adicionar coluna de estoque na linha de cada produto
+- [ ] Criar página detalhada de estoque com insights
+- [ ] Implementar alertas de risco (estoque vs meta)
+- [ ] Implementar cálculo de dias de estoque estimado
+- [ ] Implementar taxa de cobertura de meta
+- [ ] Testar funcionalidade completa

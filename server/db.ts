@@ -7,7 +7,9 @@ import {
   channels, InsertChannel, Channel,
   dailySales, InsertDailySale, DailySale,
   productChannelGoals, InsertProductChannelGoal,
-  importedFiles, InsertImportedFile
+  importedFiles, InsertImportedFile,
+  productStock, InsertProductStock, ProductStock,
+  marketplaceStock, InsertMarketplaceStock, MarketplaceStock
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -953,4 +955,149 @@ export async function getProductChannelHistory(productId: number, channelId: num
     totalSales: result.reduce((sum, r) => sum + r.quantity, 0),
     totalGoal: dailyGoal * days,
   };
+}
+
+
+// ============ STOCK FUNCTIONS ============
+
+export async function upsertProductStock(productId: number, crossdockingStock: number, lastUpdated: Date): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const existing = await db.select()
+    .from(productStock)
+    .where(eq(productStock.productId, productId))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(productStock)
+      .set({ crossdockingStock, lastUpdated })
+      .where(eq(productStock.productId, productId));
+  } else {
+    await db.insert(productStock).values({
+      productId,
+      crossdockingStock,
+      lastUpdated,
+    });
+  }
+}
+
+export async function upsertMarketplaceStock(productId: number, channelId: number, stock: number, lastUpdated: Date): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const existing = await db.select()
+    .from(marketplaceStock)
+    .where(and(eq(marketplaceStock.productId, productId), eq(marketplaceStock.channelId, channelId)))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(marketplaceStock)
+      .set({ stock, lastUpdated })
+      .where(and(eq(marketplaceStock.productId, productId), eq(marketplaceStock.channelId, channelId)));
+  } else {
+    await db.insert(marketplaceStock).values({
+      productId,
+      channelId,
+      stock,
+      lastUpdated,
+    });
+  }
+}
+
+export async function getProductStockInfo(productId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const stock = await db.select()
+    .from(productStock)
+    .where(eq(productStock.productId, productId))
+    .limit(1);
+  
+  if (stock.length === 0) return null;
+  
+  const marketplaceStocks = await db.select()
+    .from(marketplaceStock)
+    .where(eq(marketplaceStock.productId, productId));
+  
+  return {
+    crossdocking: stock[0],
+    marketplaces: marketplaceStocks,
+  };
+}
+
+export async function getAllProductsWithStock(startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const allProducts = await getAllProducts();
+  const allChannels = await getAllChannels();
+  const goals = await getAllProductChannelGoals();
+  
+  // Get all sales in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
+  
+  // Calculate days in period
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Get all stock info
+  const allStocks = await db.select().from(productStock);
+  const allMarketplaceStocks = await db.select().from(marketplaceStock);
+  
+  const products = allProducts.map(product => {
+    // Get sales data
+    const productSales = sales.filter(s => s.productId === product.id);
+    const totalSales = productSales.reduce((sum, s) => sum + s.quantity, 0);
+    const totalRevenue = productSales.reduce((sum, s) => sum + (s.revenue || 0), 0);
+    
+    // Calculate daily goal
+    let dailyGoal = 0;
+    for (const channel of allChannels) {
+      const goal = goals.find(g => g.productId === product.id && g.channelId === channel.id);
+      dailyGoal += goal?.dailyGoal || channel.dailyGoal;
+    }
+    if (dailyGoal === 0) dailyGoal = product.dailyGoal;
+    
+    const periodGoal = dailyGoal * daysInPeriod;
+    const avgSalesPerDay = totalSales / daysInPeriod;
+    
+    // Get stock info
+    const stock = allStocks.find(s => s.productId === product.id);
+    const crossdockingStock = stock?.crossdockingStock || 0;
+    const totalStock = crossdockingStock + (allMarketplaceStocks
+      .filter(ms => ms.productId === product.id)
+      .reduce((sum, ms) => sum + ms.stock, 0) || 0);
+    
+    // Calculate stock coverage
+    const daysOfStockAvailable = avgSalesPerDay > 0 ? Math.round(totalStock / avgSalesPerDay) : 0;
+    const stockCoveragePercentage = periodGoal > 0 ? Math.round((totalStock / periodGoal) * 100) : 0;
+    
+    // Determine risk level
+    let riskLevel: 'green' | 'yellow' | 'red' = 'green';
+    if (stockCoveragePercentage < 50) {
+      riskLevel = 'red';
+    } else if (stockCoveragePercentage < 100) {
+      riskLevel = 'yellow';
+    }
+    
+    return {
+      ...product,
+      totalSales,
+      totalRevenue,
+      dailyGoal,
+      periodGoal,
+      avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
+      crossdockingStock,
+      totalStock,
+      daysOfStockAvailable,
+      stockCoveragePercentage,
+      riskLevel,
+    };
+  });
+  
+  return products;
 }

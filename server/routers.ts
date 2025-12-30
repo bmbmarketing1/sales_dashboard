@@ -1,6 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { stockRouter } from "./routers/stock";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
@@ -35,10 +36,14 @@ import {
   getSalesByMarketplace,
   getProductChannelHistory,
   deleteImportedFile,
+  upsertProductStock,
+  upsertMarketplaceStock,
+  getAllProductsWithStock,
 } from "./db";
 
 export const appRouter = router({
   system: systemRouter,
+  stock: stockRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

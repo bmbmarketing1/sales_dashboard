@@ -39,6 +39,8 @@ interface ProductWithSales {
   totalSales: number;
   totalRevenue?: number;
   channelSales: ChannelSale[];
+  totalStock?: number;
+  crossdockingStock?: number;
 }
 
 interface ProductRowProps {
@@ -117,6 +119,18 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
               goal={product.dailyGoal} 
               size="lg" 
             />
+          </div>
+          
+          {/* Stock */}
+          <div className="flex items-center gap-2 shrink-0 min-w-[80px]">
+            <div className="text-right">
+              <span className="text-sm font-semibold text-gray-700">
+                {product.totalStock || 0}
+              </span>
+              <div className="text-xs text-gray-400">
+                estoque
+              </div>
+            </div>
           </div>
           
           {/* Revenue */}

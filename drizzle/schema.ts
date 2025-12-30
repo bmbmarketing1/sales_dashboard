@@ -100,3 +100,36 @@ export const importedFiles = mysqlTable("imported_files", {
 
 export type ImportedFile = typeof importedFiles.$inferSelect;
 export type InsertImportedFile = typeof importedFiles.$inferInsert;
+
+/**
+ * Product Stock - Crossdocking (estoque centralizado)
+ */
+export const productStock = mysqlTable("product_stock", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull().unique(),
+  crossdockingStock: int("crossdockingStock").default(0).notNull(),
+  lastUpdated: date("lastUpdated").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductStock = typeof productStock.$inferSelect;
+export type InsertProductStock = typeof productStock.$inferInsert;
+
+/**
+ * Marketplace Stock - Fulfillment por marketplace
+ */
+export const marketplaceStock = mysqlTable("marketplace_stock", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  channelId: int("channelId").notNull(),
+  stock: int("stock").default(0).notNull(),
+  lastUpdated: date("lastUpdated").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  productChannelUnique: unique().on(table.productId, table.channelId),
+}));
+
+export type MarketplaceStock = typeof marketplaceStock.$inferSelect;
+export type InsertMarketplaceStock = typeof marketplaceStock.$inferInsert;
