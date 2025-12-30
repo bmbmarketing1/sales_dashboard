@@ -1,5 +1,14 @@
 # Sales Dashboard - TODO
 
+## Nomenclatura de Marcas
+- **BL** = Marca **CNM** (Utilidade Doméstica)
+- **BQ** = Marca **Brinquei** (Brinquedos)
+
+## Estrutura de Estoque
+A planilha de estoque contém colunas para cada marca em cada marketplace:
+- **Fulfillment (FUL)**: Estoque em warehouse do marketplace
+- **Crossdocking (MIND)**: Estoque em warehouse próprio
+
 ## Funcionalidades Principais
 
 - [x] Sistema de importação de planilhas XLS diárias (formato DD-MM-YYYY.xls)

@@ -42,33 +42,34 @@ export const stockRouter = router({
         console.log("Headers encontrados:", headerRow);
         
         // Mapeamento de colunas - buscar por padrões na sua planilha
+        // Nota: BL = Marca CNM (Utilidade Doméstica), BQ = Marca Brinquei (Brinquedos)
         headerRow.forEach((col, idx) => {
           const colLower = (col || "").toString().toLowerCase().trim();
           
           if (colLower.includes("cód") && colLower.includes("interno")) {
             columnIndices["internalCode"] = idx;
           }
-          // Mercado Livre - procurar por "ml" + "ful" + "cnm"
+          // Mercado Livre Fulfillment CNM
           else if (colLower.includes("ml") && colLower.includes("ful") && colLower.includes("cnm")) {
             columnIndices["ml"] = idx;
           }
-          // Magalu - procurar por "magalu" + "ful" + "cnm"
+          // Magalu Fulfillment CNM
           else if (colLower.includes("magalu") && colLower.includes("ful") && colLower.includes("cnm")) {
             columnIndices["magalu"] = idx;
           }
-          // Amazon - procurar por "amazon" + "ful" + "cnm"
+          // Amazon Fulfillment CNM
           else if (colLower.includes("amazon") && colLower.includes("ful") && colLower.includes("cnm")) {
             columnIndices["amazon"] = idx;
           }
-          // Shopee - procurar por "shopee" + "full" + "cnm"
+          // Shopee Fulfillment CNM
           else if (colLower.includes("shopee") && colLower.includes("full") && colLower.includes("cnm")) {
             columnIndices["shopee"] = idx;
           }
-          // TikTok - procurar por "tk" + "full" + "cnm"
+          // TikTok Fulfillment CNM
           else if ((colLower.includes("tk") || colLower.includes("tiktok")) && colLower.includes("full") && colLower.includes("cnm")) {
             columnIndices["tiktok"] = idx;
           }
-          // Crossdocking - procurar por "mind" + "cnm"
+          // Crossdocking CNM
           else if (colLower.includes("mind") && colLower.includes("cnm")) {
             columnIndices["crossdocking"] = idx;
           }
