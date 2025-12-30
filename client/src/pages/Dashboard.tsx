@@ -610,6 +610,7 @@ export default function Dashboard() {
                     }}
                     onGoalUpdated={handleImportSuccess}
                     periodLabel={`${daysInPeriod} dias`}
+                    periodDays={daysInPeriod}
                   />
                 ))}
               </div>

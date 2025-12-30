@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { stockRouter } from "./routers/stock";
+import { goalsRouter } from "./routers/goals";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
@@ -44,6 +45,7 @@ import {
 export const appRouter = router({
   system: systemRouter,
   stock: stockRouter,
+  goals: goalsRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

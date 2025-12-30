@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Thermometer } from "./Thermometer";
 import { GoalEditor } from "./GoalEditor";
-import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign, AlertCircle } from "lucide-react";
+import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign, AlertCircle, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Função para formatar valores monetários grandes de forma compacta
@@ -61,7 +61,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
   const [expanded, setExpanded] = useState(false);
   const [goalEditorOpen, setGoalEditorOpen] = useState(false);
   
-  // Calcular média de vendas por dia
+  // Calcular média de vendas por dia usando o período correto
   const averageSalesPerDay = periodDays > 0 ? product.totalSales / periodDays : 0;
   
   const percentage = product.dailyGoal > 0 
@@ -78,6 +78,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
   const getStockRiskColor = () => {
     if (product.riskLevel === 'red') return 'bg-red-50 border-l-red-500';
     if (product.riskLevel === 'yellow') return 'bg-yellow-50 border-l-yellow-500';
+    if (product.riskLevel === 'green') return 'bg-green-50 border-l-green-500';
     return 'bg-white';
   };
   
@@ -99,7 +100,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
     if (product.riskLevel === 'yellow') {
       return `Atenção: Estoque baixo. Recomendação: reabastecer ${product.reabastecimentoRecomendado} unidades`;
     }
-    return `Adequado: ${product.daysOfStockAvailable} dias de estoque disponível`;
+    return `Adequado: ${product.daysOfStockAvailable} dias de estoque disponível. Cobertura: ${product.stockCoveragePercentage}% da meta`;
   };
   
   return (
@@ -135,7 +136,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
                 / {product.dailyGoal}
               </span>
               <div className="text-xs text-gray-400 mt-1">
-                Média {(product.totalSales / periodDays).toFixed(1)}/dia
+                Média {averageSalesPerDay.toFixed(1)}/dia
               </div>
             </div>
             <Thermometer 
@@ -219,21 +220,33 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
           </Button>
         </div>
         
-        {/* Risk Alert (if applicable) */}
-        {product.riskLevel && product.riskLevel !== 'green' && (
+        {/* Stock Alert (all levels - red, yellow, green) */}
+        {product.riskLevel && (
           <div className={cn(
             "px-3 py-2 border-t flex items-start gap-2",
-            product.riskLevel === 'red' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'
+            product.riskLevel === 'red' ? 'bg-red-50 border-red-200' :
+            product.riskLevel === 'yellow' ? 'bg-yellow-50 border-yellow-200' :
+            'bg-green-50 border-green-200'
           )}>
-            <AlertCircle className={cn(
-              "w-4 h-4 mt-0.5 shrink-0",
-              product.riskLevel === 'red' ? 'text-red-600' : 'text-yellow-600'
-            )} />
+            {product.riskLevel === 'green' ? (
+              <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />
+            ) : (
+              <AlertCircle className={cn(
+                "w-4 h-4 mt-0.5 shrink-0",
+                product.riskLevel === 'red' ? 'text-red-600' : 'text-yellow-600'
+              )} />
+            )}
             <div className={cn(
               "text-xs",
-              product.riskLevel === 'red' ? 'text-red-700' : 'text-yellow-700'
+              product.riskLevel === 'red' ? 'text-red-700' :
+              product.riskLevel === 'yellow' ? 'text-yellow-700' :
+              'text-green-700'
             )}>
-              <p className="font-semibold">{product.riskLevel === 'red' ? 'Alerta Crítico' : 'Atenção'}</p>
+              <p className="font-semibold">
+                {product.riskLevel === 'red' ? 'Alerta Crítico' :
+                 product.riskLevel === 'yellow' ? 'Atenção' :
+                 'Estoque Adequado'}
+              </p>
               <p className="mt-1">{getRiskMessage()}</p>
               {product.marketplaceDistribution && product.marketplaceDistribution.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">

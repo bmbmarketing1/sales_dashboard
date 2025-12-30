@@ -227,3 +227,10 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [ ] Simulador de cenários (e se aumentar meta em 20%?)
 - [ ] Histórico de variação de estoque
 - [ ] Análise de sazonalidade
+
+
+## Correções Urgentes
+
+- [x] Corrigir alerta verde para mostrar informações completas (dias, distribuição, recomendação)
+- [x] Implementar importação de metas por planilha (atualizar em massa)
+- [x] Corrigir cálculo de média de vendas (usar dias do período, não 30 dias fixo)
