@@ -184,6 +184,7 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Corrigir modal de upload de estoque (adicionar botão Enviar e feedback)
 - [x] Testar e corrigir upload de estoque via navegador
 - [x] Corrigir retorno de dados de estoque na API
+- [x] Corrigir lógica de estoque: FULL específico por marketplace, CROSS compartilhado
 - [ ] Criar página detalhada de estoque com insights
 - [ ] Implementar alertas de risco (estoque vs meta)
 - [ ] Implementar cálculo de dias de estoque estimado

@@ -4,8 +4,7 @@ import * as XLSX from "xlsx";
 import {
   getAllProducts,
   getAllChannels,
-  upsertProductStock,
-  upsertMarketplaceStock,
+  upsertProductChannelStockType,
   getAllProductsWithStock,
 } from "../db";
 
@@ -37,48 +36,55 @@ export const stockRouter = router({
         
         // Find column indices from header row
         const headerRow = data[0] as string[];
-        const columnIndices: Record<string, number> = {};
         
         console.log("Headers encontrados:", headerRow);
         
         // Mapeamento de colunas - buscar por padrões na sua planilha
-        // Nota: BL = Marca CNM (Utilidade Doméstica), BQ = Marca Brinquei (Brinquedos)
+        // FULL columns por marketplace (CNM + Brinquei)
+        const fullColumns: Record<string, string[]> = {
+          "Mercado Livre": ["ML FUL CNM ", "FUL BRINQUEI"],
+          "Magalu": ["MAGALU FUL CNM", "MAGALU FUL BRIN"],
+          "Amazon": ["AMAZON FUL CNM", "AMAZON FUL BRQ"],
+          "Shopee": ["SHOPEE FULL BRI", "SHOPEE FULL CNM"],
+          "TikTok": ["TK FULL BRINQUEI", "TK FULL CNM"],
+        };
+        
+        // CROSS columns (sempre os mesmos para todos os marketplaces)
+        const crossColumns = ["CNM MIND", "BRINQUEI MIND"];
+        
+        // Find column index for internal code
+        let internalCodeIdx = -1;
         headerRow.forEach((col, idx) => {
           const colLower = (col || "").toString().toLowerCase().trim();
-          
           if (colLower.includes("cód") && colLower.includes("interno")) {
-            columnIndices["internalCode"] = idx;
-          }
-          // Mercado Livre Fulfillment CNM
-          else if (colLower.includes("ml") && colLower.includes("ful") && colLower.includes("cnm")) {
-            columnIndices["ml"] = idx;
-          }
-          // Magalu Fulfillment CNM
-          else if (colLower.includes("magalu") && colLower.includes("ful") && colLower.includes("cnm")) {
-            columnIndices["magalu"] = idx;
-          }
-          // Amazon Fulfillment CNM
-          else if (colLower.includes("amazon") && colLower.includes("ful") && colLower.includes("cnm")) {
-            columnIndices["amazon"] = idx;
-          }
-          // Shopee Fulfillment CNM
-          else if (colLower.includes("shopee") && colLower.includes("full") && colLower.includes("cnm")) {
-            columnIndices["shopee"] = idx;
-          }
-          // TikTok Fulfillment CNM
-          else if ((colLower.includes("tk") || colLower.includes("tiktok")) && colLower.includes("full") && colLower.includes("cnm")) {
-            columnIndices["tiktok"] = idx;
-          }
-          // Crossdocking CNM
-          else if (colLower.includes("mind") && colLower.includes("cnm")) {
-            columnIndices["crossdocking"] = idx;
+            internalCodeIdx = idx;
           }
         });
         
-        console.log(`[Stock Upload] Column indices encontrados:`, columnIndices);
+        // Find column indices for FULL stocks
+        const fullColumnIndices: Record<string, number[]> = {};
+        for (const [marketplace, cols] of Object.entries(fullColumns)) {
+          fullColumnIndices[marketplace] = [];
+          for (const col of cols) {
+            const idx = headerRow.findIndex(h => h === col);
+            if (idx !== -1) {
+              fullColumnIndices[marketplace].push(idx);
+            }
+          }
+        }
+        
+        // Find column indices for CROSS stocks
+        const crossColumnIndices: number[] = [];
+        for (const col of crossColumns) {
+          const idx = headerRow.findIndex(h => h === col);
+          if (idx !== -1) {
+            crossColumnIndices.push(idx);
+          }
+        }
+        
+        console.log(`[Stock Upload] Column indices encontrados:`, { internalCodeIdx, fullColumnIndices, crossColumnIndices });
         
         let recordsImported = 0;
-        const today = new Date();
         
         console.log(`[Stock Upload] Iniciando processamento de ${data.length - 1} linhas...`);
         
@@ -87,48 +93,51 @@ export const stockRouter = router({
           const row = data[i] as (string | number)[];
           if (!row || row.length === 0) continue;
           
-          const internalCode = row[columnIndices["internalCode"]]?.toString().trim();
+          const internalCode = row[internalCodeIdx]?.toString().trim();
           if (!internalCode) continue;
-          
-          // Ignorar produtos que não começam com BL
-          if (!internalCode.startsWith("BL")) continue;
           
           // Find product by internal code
           const product = products.find(p => p.internalCode === internalCode);
           if (!product) continue;
           
-          // Get crossdocking stock (ignorar valores negativos)
-          const crossdockingValue = row[columnIndices["crossdocking"]]?.toString() || "0";
-          const crossdockingStock = Math.max(0, parseInt(crossdockingValue) || 0);
-          if (crossdockingStock > 0) {
-            await upsertProductStock(product.id, crossdockingStock, today);
+          // Calculate CROSS stock (soma de CNM MIND + BRINQUEI MIND)
+          let totalCrossStock = 0;
+          for (const idx of crossColumnIndices) {
+            const value = row[idx]?.toString() || "0";
+            totalCrossStock += Math.max(0, parseInt(value) || 0);
           }
           
-          // Get marketplace stocks (ignorar valores negativos)
-          const marketplaceStocks: Record<string, number> = {
-            "Mercado Livre": Math.max(0, parseInt(row[columnIndices["ml"]]?.toString() || "0") || 0),
-            "Magalu": Math.max(0, parseInt(row[columnIndices["magalu"]]?.toString() || "0") || 0),
-            "Amazon": Math.max(0, parseInt(row[columnIndices["amazon"]]?.toString() || "0") || 0),
-            "Shopee": Math.max(0, parseInt(row[columnIndices["shopee"]]?.toString() || "0") || 0),
-            "TikTok": Math.max(0, parseInt(row[columnIndices["tiktok"]]?.toString() || "0") || 0),
-          };
-          
-          for (const [channelName, stock] of Object.entries(marketplaceStocks)) {
-            const channel = channels.find(c => c.name === channelName);
-            if (channel && stock > 0) {
-              await upsertMarketplaceStock(product.id, channel.id, stock, today);
+          // Process FULL stock for each marketplace
+          for (const [marketplace, cols] of Object.entries(fullColumns)) {
+            const channel = channels.find(c => c.name === marketplace);
+            if (!channel) continue;
+            
+            // Calculate FULL stock for this marketplace (soma de CNM + Brinquei)
+            let totalFullStock = 0;
+            const indices = fullColumnIndices[marketplace] || [];
+            for (const idx of indices) {
+              const value = row[idx]?.toString() || "0";
+              totalFullStock += Math.max(0, parseInt(value) || 0);
             }
+            
+            // Save to database (sempre salvar, mesmo que seja 0)
+            await upsertProductChannelStockType(
+              product.id,
+              channel.id,
+              totalFullStock,
+              totalCrossStock
+            );
+            
+            recordsImported++;
           }
-          
-          recordsImported++;
         }
         
-        console.log(`[Stock Upload] Importação concluída! ${recordsImported} produtos atualizados`);
+        console.log(`[Stock Upload] Importação concluída! ${recordsImported} registros atualizados`);
         
         return {
           success: true,
           recordsImported,
-          message: `✅ Importação concluída: ${recordsImported} produtos atualizados com estoque`,
+          message: `✅ Importação concluída: ${recordsImported} registros de estoque atualizados`,
         };
       } catch (error) {
         console.error("Erro ao importar estoque:", error);
@@ -145,27 +154,5 @@ export const stockRouter = router({
     }))
     .query(async ({ input }) => {
       return getAllProductsWithStock(input.startDate, input.endDate);
-    }),
-  
-  testUpload: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      try {
-        console.log(`[Stock Test] Iniciando teste`);
-        const products = await getAllProducts();
-        const channels = await getAllChannels();
-        let recordsImported = 0;
-        const today = new Date();
-        const testCodes = ["BL001", "BL003", "BL005"];
-        for (const code of testCodes) {
-          const product = products.find(p => p.internalCode === code);
-          if (product) {
-            await upsertProductStock(product.id, 100, today);
-            recordsImported++;
-          }
-        }
-        return { success: true, recordsImported, message: `Teste ok: ${recordsImported} produtos` };
-      } catch (error) {
-        throw new Error(`Erro: ${error}`);
-      }
     }),
 });
