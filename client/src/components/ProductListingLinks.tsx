@@ -101,7 +101,9 @@ export function ProductListingLinks({
             </div>
           ) : (
             <div className="space-y-2">
-              {links.map((link) => (
+              {links
+                .filter((link) => !channelId || link.channelId === channelId)
+                .map((link) => (
                 <div
                   key={link.id}
                   className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"

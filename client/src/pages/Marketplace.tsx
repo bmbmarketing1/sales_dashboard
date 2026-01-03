@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Thermometer } from "@/components/Thermometer";
+import { ProductListingLinks } from "@/components/ProductListingLinks";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,8 @@ import {
   Target,
   TrendingUp,
   Store,
-  BarChart3
+  BarChart3,
+  Link as LinkIcon
 } from "lucide-react";
 import { Link, useParams } from "wouter";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
@@ -65,6 +67,9 @@ export default function Marketplace() {
   // Product history modal state
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  
+  // Links view state
+  const [expandedLinksProductId, setExpandedLinksProductId] = useState<number | null>(null);
   
   const today = new Date();
   
@@ -432,10 +437,11 @@ export default function Marketplace() {
             <CardContent>
               <div className="space-y-2">
                 {filteredProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex items-center gap-4 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
-                  >
+                  <>
+                    <div
+                      key={product.id}
+                      className="flex items-center gap-4 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
+                    >
                     <div className={cn(
                       "w-1 h-12 rounded-full",
                       product.percentage >= 100 ? "bg-green-500" :
@@ -488,13 +494,30 @@ export default function Marketplace() {
                           Detalhes
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/produto/${product.id}?tab=links`}>
-                          Links
-                        </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setExpandedLinksProductId(expandedLinksProductId === product.id ? null : product.id)}
+                        className="gap-2"
+                      >
+                        <LinkIcon className="w-4 h-4" />
+                        Links
                       </Button>
                     </div>
-                  </div>
+                    </div>
+                    
+                    {/* Expanded links section */}
+                    {expandedLinksProductId === product.id && (
+                      <div className="w-full mt-2 p-4 bg-blue-50 rounded-lg border border-blue-200 ml-1 mr-1">
+                        <ProductListingLinks 
+                          productId={product.id} 
+                          productCode={product.internalCode}
+                          productName={product.description}
+                          channelId={channelId}
+                        />
+                      </div>
+                    )}
+                  </>
                 ))}
               </div>
             </CardContent>
