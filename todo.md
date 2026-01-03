@@ -282,3 +282,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 ## Melhorias na Tabela de Marketplace
 
 - [x] Adicionar coluna "Média X.X/dia" na linha do produto na tabela de cada marketplace
+
+
+## Sistema de Alerta de Cobertura de Estoque FULL
+
+- [x] Implementar cálculo de cobertura: (Média de vendas × dias do período) / Estoque FULL
+- [x] Criar alerta visual para estoque com cobertura insuficiente
+- [x] Alertar também sobre estoque excedente (quando cobertura > 100%)
+- [x] Integrar alerta na tabela de marketplace
+- [x] Testar lógica com exemplos reais

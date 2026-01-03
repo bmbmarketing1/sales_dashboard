@@ -720,6 +720,11 @@ export async function getSalesByMarketplace(channelId: number, startDate: string
   const allChannels = await getAllChannels();
   const goals = await getAllProductChannelGoals();
   
+  // Get stock data for this channel
+  const stockData = await db.select()
+    .from(productChannelStockTypes)
+    .where(sql`${productChannelStockTypes.channelId} = ${channelId}`);
+  
   const channel = allChannels.find(c => c.id === channelId);
   if (!channel) return { channel: null, products: [], daysInPeriod: 0 };
   
@@ -747,6 +752,17 @@ export async function getSalesByMarketplace(channelId: number, startDate: string
     const totalSales = salesByProduct.get(product.id) || 0;
     const percentage = periodGoal > 0 ? Math.round((totalSales / periodGoal) * 100) : 0;
     
+    // Calculate average daily sales for the period
+    const averageDailySales = daysInPeriod > 0 ? totalSales / daysInPeriod : 0;
+    
+    // Get stock coverage data
+    const stock = stockData.find(s => s.productId === product.id);
+    const fullStock = stock?.fullStock || 0;
+    const stockNeeded = averageDailySales * daysInPeriod;
+    const stockCoverage = fullStock > 0 ? Math.round((stockNeeded / fullStock) * 100) : 0;
+    const stockExcess = Math.max(0, fullStock - stockNeeded);
+    const stockDeficit = Math.max(0, stockNeeded - fullStock);
+    
     return {
       id: product.id,
       externalId: product.externalId,
@@ -757,9 +773,14 @@ export async function getSalesByMarketplace(channelId: number, startDate: string
       periodGoal,
       totalSales,
       percentage,
+      averageDailySales: Math.round(averageDailySales * 10) / 10,
+      fullStock,
+      stockCoverage,
+      stockExcess: Math.round(stockExcess),
+      stockDeficit: Math.round(stockDeficit),
     };
   });
-  
+
   // Calculate channel totals
   const totalSales = products.reduce((sum, p) => sum + p.totalSales, 0);
   const totalGoal = products.reduce((sum, p) => sum + p.periodGoal, 0);

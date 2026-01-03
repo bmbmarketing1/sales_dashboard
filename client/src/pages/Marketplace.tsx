@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Thermometer } from "@/components/Thermometer";
 import { ProductListingLinks } from "@/components/ProductListingLinks";
 import { StockDisplay } from "@/components/StockDisplay";
+import { StockCoverageAlert } from "@/components/StockCoverageAlert";
 import {
   Dialog,
   DialogContent,
@@ -476,6 +477,17 @@ export default function Marketplace() {
                       </div>
                       
                       <StockDisplay productId={product.id} channelId={channelId} />
+                      
+                      {product.stockCoverage !== undefined && (
+                        <StockCoverageAlert
+                          stockCoverage={product.stockCoverage}
+                          stockExcess={product.stockExcess || 0}
+                          stockDeficit={product.stockDeficit || 0}
+                          fullStock={product.fullStock || 0}
+                          averageDailySales={product.averageDailySales || 0}
+                          size="sm"
+                        />
+                      )}
                       
                       <div className="text-right">
                         <div className={cn(
