@@ -13,6 +13,7 @@ import { CategoryUpload } from "@/components/CategoryUpload";
 import { ProductUpload } from "@/components/ProductUpload";
 import { ImageUpload } from "@/components/ImageUpload";
 import { StockUpload } from "@/components/StockUpload";
+import { ListingsUpload } from "@/components/ListingsUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
@@ -104,6 +105,7 @@ export default function Dashboard() {
   const [productUploadOpen, setProductUploadOpen] = useState(false);
   const [imageUploadOpen, setImageUploadOpen] = useState(false);
   const [stockUploadOpen, setStockUploadOpen] = useState(false);
+  const [listingsUploadOpen, setListingsUploadOpen] = useState(false);
   
   // Category filter state
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -338,6 +340,10 @@ export default function Dashboard() {
               <Button variant="outline" onClick={() => setStockUploadOpen(true)}>
                 <Package2 className="w-4 h-4 mr-2" />
                 Estoque
+              </Button>
+              <Button variant="outline" onClick={() => setListingsUploadOpen(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Links
               </Button>
               <Button onClick={() => setUploadOpen(true)}>
                 <Upload className="w-4 h-4 mr-2" />
@@ -774,6 +780,11 @@ export default function Dashboard() {
       <StockUpload
         open={stockUploadOpen}
         onOpenChange={setStockUploadOpen}
+        onSuccess={handleImportSuccess}
+      />
+      <ListingsUpload
+        open={listingsUploadOpen}
+        onOpenChange={setListingsUploadOpen}
         onSuccess={handleImportSuccess}
       />
     </div>

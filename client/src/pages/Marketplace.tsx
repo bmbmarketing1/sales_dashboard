@@ -488,6 +488,11 @@ export default function Marketplace() {
                           Detalhes
                         </Link>
                       </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/produto/${product.id}?tab=links`}>
+                          Links
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 ))}

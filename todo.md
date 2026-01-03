@@ -234,3 +234,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Corrigir alerta verde para mostrar informações completas (dias, distribuição, recomendação)
 - [x] Implementar importação de metas por planilha (atualizar em massa)
 - [x] Corrigir cálculo de média de vendas (usar dias do período, não 30 dias fixo)
+
+
+## Sistema de Links de Anúncios
+
+- [x] Criar tabela de links de anúncios no banco
+- [x] Criar API para importar links via planilha (referência, marketplace, link)
+- [x] Adicionar componente para exibir links ao expandir produto
+- [x] Criar modal de upload de links
+- [x] Testar com BL001 (arquivo de teste criado)

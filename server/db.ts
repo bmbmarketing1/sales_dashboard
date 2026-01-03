@@ -9,7 +9,8 @@ import {
   productChannelGoals, InsertProductChannelGoal,
   importedFiles, InsertImportedFile,
   productStock, InsertProductStock, ProductStock,
-  marketplaceStock, InsertMarketplaceStock, MarketplaceStock
+  marketplaceStock, InsertMarketplaceStock, MarketplaceStock,
+  productListingLinks, InsertProductListingLink, ProductListingLink
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1254,4 +1255,101 @@ export async function calculateStockMetrics(
     reabastecimentoRecomendado,
     previsaoFaltaEstoque,
   };
+}
+
+
+// ============ PRODUCT LISTING LINKS ============
+
+export async function upsertProductListingLink(
+  productId: number,
+  channelId: number,
+  listingUrl: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    // Check if link already exists
+    const existing = await db.select()
+      .from(productListingLinks)
+      .where(and(
+        eq(productListingLinks.productId, productId),
+        eq(productListingLinks.channelId, channelId)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing link
+      await db.update(productListingLinks)
+        .set({ listingUrl })
+        .where(and(
+          eq(productListingLinks.productId, productId),
+          eq(productListingLinks.channelId, channelId)
+        ));
+    } else {
+      // Insert new link
+      await db.insert(productListingLinks).values({
+        productId,
+        channelId,
+        listingUrl,
+      });
+    }
+  } catch (error) {
+    console.error("[DB] Error upserting product listing link:", error);
+  }
+}
+
+export async function getProductListingLinks(productId: number): Promise<ProductListingLink[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select()
+      .from(productListingLinks)
+      .where(eq(productListingLinks.productId, productId));
+  } catch (error) {
+    console.error("[DB] Error getting product listing links:", error);
+    return [];
+  }
+}
+
+export async function getProductListingLinksByChannel(
+  productId: number,
+  channelId: number
+): Promise<ProductListingLink | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const result = await db.select()
+      .from(productListingLinks)
+      .where(and(
+        eq(productListingLinks.productId, productId),
+        eq(productListingLinks.channelId, channelId)
+      ))
+      .limit(1);
+
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[DB] Error getting product listing link:", error);
+    return null;
+  }
+}
+
+export async function deleteProductListingLink(
+  productId: number,
+  channelId: number
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    await db.delete(productListingLinks)
+      .where(and(
+        eq(productListingLinks.productId, productId),
+        eq(productListingLinks.channelId, channelId)
+      ));
+  } catch (error) {
+    console.error("[DB] Error deleting product listing link:", error);
+  }
 }

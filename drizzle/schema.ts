@@ -133,3 +133,21 @@ export const marketplaceStock = mysqlTable("marketplace_stock", {
 
 export type MarketplaceStock = typeof marketplaceStock.$inferSelect;
 export type InsertMarketplaceStock = typeof marketplaceStock.$inferInsert;
+
+
+/**
+ * Product Listing Links - Links dos anúncios por produto e marketplace
+ */
+export const productListingLinks = mysqlTable("product_listing_links", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  channelId: int("channelId").notNull(),
+  listingUrl: text("listingUrl").notNull(), // URL do anúncio
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  productChannelUnique: unique().on(table.productId, table.channelId),
+}));
+
+export type ProductListingLink = typeof productListingLinks.$inferSelect;
+export type InsertProductListingLink = typeof productListingLinks.$inferInsert;
