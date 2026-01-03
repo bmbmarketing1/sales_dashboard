@@ -470,6 +470,11 @@ export default function Marketplace() {
                         <Thermometer value={product.totalSales} goal={product.periodGoal} size="sm" showLabel={false} />
                       </div>
                       
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Média</p>
+                        <p className="font-semibold text-sm">{(product.totalSales / daysInPeriod).toFixed(1)}/dia</p>
+                      </div>
+                      
                       <StockDisplay productId={product.id} channelId={channelId} />
                       
                       <div className="text-right">

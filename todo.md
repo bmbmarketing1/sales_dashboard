@@ -277,3 +277,8 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [ ] Adicionar botão "Consultar Preço" no card de links
 - [ ] Exibir preço consultado no card de links
 - [ ] Testar funcionalidade de consulta de preço
+
+
+## Melhorias na Tabela de Marketplace
+
+- [x] Adicionar coluna "Média X.X/dia" na linha do produto na tabela de cada marketplace
