@@ -2,72 +2,55 @@ import { AlertCircle, TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StockCoverageAlertProps {
-  stockCoverage: number;
-  stockExcess?: number;
-  stockDeficit?: number;
   fullStock: number;
   averageDailySales: number;
   size?: "sm" | "md" | "lg";
 }
 
 export function StockCoverageAlert({
-  stockCoverage,
-  stockExcess = 0,
-  stockDeficit = 0,
   fullStock,
   averageDailySales,
   size = "md",
 }: StockCoverageAlertProps) {
-  // Determine alert level and color
-  let alertLevel: "critical" | "warning" | "good" | "excess";
+  // Calculate days of coverage: fullStock / averageDailySales
+  const daysOfCoverage = averageDailySales > 0 ? fullStock / averageDailySales : 0;
+
+  // Determine alert level and color based on days of coverage
+  let alertLevel: "critical" | "sufficient" | "excess";
   let bgColor: string;
   let textColor: string;
   let borderColor: string;
   let icon: React.ReactNode;
   let message: string;
+  let subtitle: string;
 
-  // CRITICAL: Média de vendas > 0 mas estoque FULL = 0
-  if (averageDailySales > 0 && fullStock === 0) {
+  if (daysOfCoverage < 30) {
+    // CRITICAL: Less than 30 days of coverage
     alertLevel = "critical";
     bgColor = "bg-red-50";
     textColor = "text-red-700";
     borderColor = "border-red-200";
     icon = <AlertCircle className="w-4 h-4" />;
-    message = `❌ CRÍTICO: Sem estoque FULL (demanda: ${averageDailySales}/dia)`;
-  } else if (stockCoverage > 100) {
-    // Insufficient stock
-    if (stockCoverage > 200) {
-      alertLevel = "critical";
-      bgColor = "bg-red-50";
-      textColor = "text-red-700";
-      borderColor = "border-red-200";
-      icon = <AlertCircle className="w-4 h-4" />;
-      message = `❌ CRÍTICO: Faltam ${stockDeficit} unidades`;
-    } else {
-      alertLevel = "warning";
-      bgColor = "bg-yellow-50";
-      textColor = "text-yellow-700";
-      borderColor = "border-yellow-200";
-      icon = <TrendingDown className="w-4 h-4" />;
-      message = `⚠️ ATENÇÃO: Faltam ${stockDeficit} unidades`;
-    }
+    message = `❌ CRÍTICO: ${daysOfCoverage.toFixed(1)} dias de cobertura`;
+    subtitle = `Estoque: ${fullStock} un / Demanda: ${averageDailySales.toFixed(2)}/dia`;
+  } else if (daysOfCoverage <= 60) {
+    // SUFFICIENT: 30-60 days of coverage
+    alertLevel = "sufficient";
+    bgColor = "bg-green-50";
+    textColor = "text-green-700";
+    borderColor = "border-green-200";
+    icon = <TrendingUp className="w-4 h-4" />;
+    message = `✅ SUFICIENTE: ${daysOfCoverage.toFixed(1)} dias de cobertura`;
+    subtitle = `Estoque: ${fullStock} un / Demanda: ${averageDailySales.toFixed(2)}/dia`;
   } else {
-    // Sufficient stock
-    if (stockCoverage < 20) {
-      alertLevel = "excess";
-      bgColor = "bg-blue-50";
-      textColor = "text-blue-700";
-      borderColor = "border-blue-200";
-      icon = <TrendingUp className="w-4 h-4" />;
-      message = `✅ Excedente: ${stockExcess} unidades`;
-    } else {
-      alertLevel = "good";
-      bgColor = "bg-green-50";
-      textColor = "text-green-700";
-      borderColor = "border-green-200";
-      icon = <TrendingUp className="w-4 h-4" />;
-      message = `✅ Adequado: ${stockExcess} unidades`;
-    }
+    // EXCESS: More than 60 days of coverage
+    alertLevel = "excess";
+    bgColor = "bg-blue-50";
+    textColor = "text-blue-700";
+    borderColor = "border-blue-200";
+    icon = <TrendingUp className="w-4 h-4" />;
+    message = `📦 EXCEDENTE: ${daysOfCoverage.toFixed(1)} dias de cobertura`;
+    subtitle = `Estoque: ${fullStock} un / Demanda: ${averageDailySales.toFixed(2)}/dia`;
   }
 
   // Size variants
@@ -99,7 +82,7 @@ export function StockCoverageAlert({
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{message}</p>
         <p className="text-xs opacity-75">
-          Cobertura: {stockCoverage}% ({fullStock} un / {averageDailySales}/dia)
+          {subtitle}
         </p>
       </div>
     </div>

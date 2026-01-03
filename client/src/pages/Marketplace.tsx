@@ -478,11 +478,8 @@ export default function Marketplace() {
                       
                       <StockDisplay productId={product.id} channelId={channelId} />
                       
-                      {product.stockCoverage !== undefined && (
+                      {product.fullStock !== undefined && product.averageDailySales !== undefined && (
                         <StockCoverageAlert
-                          stockCoverage={product.stockCoverage}
-                          stockExcess={product.stockExcess || 0}
-                          stockDeficit={product.stockDeficit || 0}
                           fullStock={product.fullStock || 0}
                           averageDailySales={product.averageDailySales || 0}
                           size="sm"

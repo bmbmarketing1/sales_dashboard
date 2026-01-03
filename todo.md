@@ -297,3 +297,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 
 - [x] Corrigir alerta: quando média de vendas > 0 e estoque FULL = 0, emitir alerta CRÍTICO em vermelho
 - [x] Testar em produtos com vendas mas sem estoque FULL (ex: BL029, BL036)
+
+
+## Sistema de 3 Níveis de Alertas por Dias de Cobertura
+
+- [x] Implementar cálculo de dias de cobertura: Estoque FULL / Média diária de vendas
+- [x] ALERTA CRÍTICO (vermelho): Estoque cobre < 30 dias
+- [x] ALERTA SUFICIENTE (verde): Estoque cobre 30-60 dias
+- [x] ALERTA EXCEDENTE (azul): Estoque cobre > 60 dias
+- [x] Testar em múltiplos produtos e marketplaces
