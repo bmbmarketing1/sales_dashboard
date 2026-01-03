@@ -291,3 +291,9 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Alertar também sobre estoque excedente (quando cobertura > 100%)
 - [x] Integrar alerta na tabela de marketplace
 - [x] Testar lógica com exemplos reais
+
+
+## Correção - Alerta Crítico de Falta de Estoque
+
+- [x] Corrigir alerta: quando média de vendas > 0 e estoque FULL = 0, emitir alerta CRÍTICO em vermelho
+- [x] Testar em produtos com vendas mas sem estoque FULL (ex: BL029, BL036)

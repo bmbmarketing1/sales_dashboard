@@ -26,7 +26,15 @@ export function StockCoverageAlert({
   let icon: React.ReactNode;
   let message: string;
 
-  if (stockCoverage > 100) {
+  // CRITICAL: Média de vendas > 0 mas estoque FULL = 0
+  if (averageDailySales > 0 && fullStock === 0) {
+    alertLevel = "critical";
+    bgColor = "bg-red-50";
+    textColor = "text-red-700";
+    borderColor = "border-red-200";
+    icon = <AlertCircle className="w-4 h-4" />;
+    message = `❌ CRÍTICO: Sem estoque FULL (demanda: ${averageDailySales}/dia)`;
+  } else if (stockCoverage > 100) {
     // Insufficient stock
     if (stockCoverage > 200) {
       alertLevel = "critical";
