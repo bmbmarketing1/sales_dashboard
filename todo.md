@@ -262,3 +262,9 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Criar componente AddListingForm
 - [x] Integrar formulário no ProductListingLinks
 - [x] Testar adição de links via formulário
+
+## Correção - Interface de Adição de Links
+
+- [x] Corrigir interface: adicionar botão "Ver Links de Anúncios" na seção expandida do produto
+- [x] Permitir acesso intuitivo ao formulário de adição de links sem navegação separada
+- [x] Testar fluxo completo: expandir produto → ver links → adicionar link

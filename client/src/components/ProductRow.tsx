@@ -3,7 +3,8 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Thermometer } from "./Thermometer";
 import { GoalEditor } from "./GoalEditor";
-import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign, AlertCircle, CheckCircle } from "lucide-react";
+import { ProductListingLinks } from "./ProductListingLinks";
+import { Settings, ChevronDown, ChevronUp, ExternalLink, DollarSign, AlertCircle, CheckCircle, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Função para formatar valores monetários grandes de forma compacta
@@ -59,6 +60,7 @@ interface ProductRowProps {
 
 export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 30 }: ProductRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
   const [goalEditorOpen, setGoalEditorOpen] = useState(false);
   
   // Calcular média de vendas por dia usando o período correto
@@ -262,7 +264,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
         )}
         
         {/* Channel breakdown (expanded) */}
-        {expanded && (
+        {expanded && !showLinks && (
           <div className="px-3 pb-3 pt-0">
             <div className="border-t pt-3 grid grid-cols-2 md:grid-cols-5 gap-2">
               {product.channelSales.map((channel) => {
@@ -291,6 +293,40 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
                   </div>
                 );
               })}
+            </div>
+            
+            {/* Links button */}
+            <div className="mt-3 pt-3 border-t flex justify-start">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLinks(true)}
+                className="gap-2"
+              >
+                <LinkIcon className="w-4 h-4" />
+                Ver Links de Anúncios
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Links view (expanded) */}
+        {expanded && showLinks && (
+          <div className="px-3 pb-3 pt-0">
+            <div className="border-t pt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLinks(false)}
+                className="mb-3"
+              >
+                ← Voltar aos Canais
+              </Button>
+              <ProductListingLinks
+                productId={product.id}
+                productCode={product.internalCode}
+                productName={product.description}
+              />
             </div>
           </div>
         )}
