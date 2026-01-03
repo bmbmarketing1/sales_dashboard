@@ -145,4 +145,21 @@ export const listingsRouter = router({
         throw new Error(`Erro ao deletar link: ${error instanceof Error ? error.message : 'Desconhecido'}`);
       }
     }),
+
+  create: protectedProcedure
+    .input(z.object({
+      productId: z.number(),
+      channelId: z.number(),
+      listingUrl: z.string().url(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        console.log(`[Listings Create] Criando link para produto ${input.productId}, canal ${input.channelId}`);
+        await upsertProductListingLink(input.productId, input.channelId, input.listingUrl);
+        return { success: true };
+      } catch (error) {
+        console.error("[Listings Create] Erro:", error);
+        throw new Error(`Erro ao criar link: ${error instanceof Error ? error.message : 'Desconhecido'}`);
+      }
+    }),
 });

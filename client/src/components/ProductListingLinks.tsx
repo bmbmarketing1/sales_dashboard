@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, Loader2, AlertCircle, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EditListingModal } from "./EditListingModal";
+import { AddListingForm } from "./AddListingForm";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +37,8 @@ export function ProductListingLinks({
     { productId },
     { enabled: isExpanded }
   );
+
+  const { data: channels } = trpc.sales.channels.useQuery();
 
   const deleteMutation = trpc.listings.delete.useMutation({
     onSuccess: () => {
@@ -83,7 +86,7 @@ export function ProductListingLinks({
           <p className="text-sm text-gray-600 mt-1">{productName}</p>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-5 h-5 animate-spin text-blue-600 mr-2" />
@@ -145,6 +148,15 @@ export function ProductListingLinks({
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Add Link Form */}
+          {channels && (
+            <AddListingForm
+              productId={productId}
+              channels={channels}
+              onSuccess={() => refetch()}
+            />
           )}
         </CardContent>
       </Card>

@@ -418,6 +418,11 @@ export const appRouter = router({
 
   // Sales data
   sales: router({
+    // Get all channels
+    channels: publicProcedure.query(async () => {
+      return getAllChannels();
+    }),
+
     // Get sales for a specific date with all products and channels
     byDate: publicProcedure
       .input(z.object({

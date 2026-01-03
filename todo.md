@@ -254,3 +254,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 
 - [x] Corrigir seleção de arquivo no ListingsUpload
 - [x] Testar upload de arquivo
+
+
+## Formulário de Adição de Links
+
+- [x] Criar API para adicionar novo link (create/add)
+- [x] Criar componente AddListingForm
+- [x] Integrar formulário no ProductListingLinks
+- [x] Testar adição de links via formulário
