@@ -243,3 +243,9 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Adicionar componente para exibir links ao expandir produto
 - [x] Criar modal de upload de links
 - [x] Testar com BL001 (arquivo de teste criado)
+
+- [x] Adicionar API de edição de links (updateLink)
+- [x] Adicionar API de exclusão de links (deleteLink)
+- [x] Adicionar botões de editar/excluir no componente ProductListingLinks
+- [x] Criar modal de edição de links
+- [x] Implementar confirmação de exclusão

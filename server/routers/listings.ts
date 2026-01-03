@@ -6,6 +6,7 @@ import {
   getAllChannels,
   upsertProductListingLink,
   getProductListingLinks,
+  deleteProductListingLink,
 } from "../db";
 
 export const listingsRouter = router({
@@ -109,5 +110,39 @@ export const listingsRouter = router({
     }))
     .query(async ({ input }) => {
       return await getProductListingLinks(input.productId);
+    }),
+
+  update: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      productId: z.number(),
+      channelId: z.number(),
+      listingUrl: z.string().url(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        console.log(`[Listings Update] Atualizando link ${input.id}`);
+        await upsertProductListingLink(input.productId, input.channelId, input.listingUrl);
+        return { success: true };
+      } catch (error) {
+        console.error("[Listings Update] Erro:", error);
+        throw new Error(`Erro ao atualizar link: ${error instanceof Error ? error.message : 'Desconhecido'}`);
+      }
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({
+      productId: z.number(),
+      channelId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        console.log(`[Listings Delete] Deletando link do produto ${input.productId}, canal ${input.channelId}`);
+        await deleteProductListingLink(input.productId, input.channelId);
+        return { success: true };
+      } catch (error) {
+        console.error("[Listings Delete] Erro:", error);
+        throw new Error(`Erro ao deletar link: ${error instanceof Error ? error.message : 'Desconhecido'}`);
+      }
     }),
 });
