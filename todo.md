@@ -249,3 +249,8 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Adicionar botões de editar/excluir no componente ProductListingLinks
 - [x] Criar modal de edição de links
 - [x] Implementar confirmação de exclusão
+
+## Correção - Modal de Importação de Links
+
+- [x] Corrigir seleção de arquivo no ListingsUpload
+- [x] Testar upload de arquivo

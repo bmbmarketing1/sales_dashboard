@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, Loader } from "lucide-react";
+import { AlertCircle, CheckCircle, Loader, Upload } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 interface ListingsUploadProps {
@@ -14,6 +14,7 @@ export function ListingsUpload({ open, onOpenChange, onSuccess }: ListingsUpload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const importMutation = trpc.listings.importFromFile.useMutation();
   
@@ -35,9 +36,9 @@ export function ListingsUpload({ open, onOpenChange, onSuccess }: ListingsUpload
       // Read file as base64
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(',')[1];
-        
         try {
+          const base64 = (e.target?.result as string).split(',')[1];
+          
           const result = await importMutation.mutateAsync({
             fileName: selectedFile.name,
             fileBase64: base64,
@@ -49,6 +50,9 @@ export function ListingsUpload({ open, onOpenChange, onSuccess }: ListingsUpload
           });
           
           setSelectedFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
           
           // Close modal after 2 seconds
           setTimeout(() => {
@@ -60,9 +64,16 @@ export function ListingsUpload({ open, onOpenChange, onSuccess }: ListingsUpload
             type: 'error',
             text: `❌ Erro ao importar links: ${error instanceof Error ? error.message : 'Desconhecido'}`,
           });
-        } finally {
           setLoading(false);
         }
+      };
+      
+      reader.onerror = () => {
+        setMessage({
+          type: 'error',
+          text: '❌ Erro ao ler arquivo',
+        });
+        setLoading(false);
       };
       
       reader.readAsDataURL(selectedFile);
@@ -86,22 +97,39 @@ export function ListingsUpload({ open, onOpenChange, onSuccess }: ListingsUpload
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* File input */}
-          <div className="flex items-center gap-2">
+          {/* File input - styled button */}
+          <div>
             <input
+              ref={fileInputRef}
               type="file"
               accept=".xls,.xlsx"
               onChange={handleFileSelect}
               disabled={loading}
-              className="flex-1"
+              className="hidden"
+              id="listings-file-input"
             />
+            <label htmlFor="listings-file-input">
+              <Button
+                variant="outline"
+                className="w-full cursor-pointer"
+                disabled={loading}
+                asChild
+              >
+                <div className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  {selectedFile ? selectedFile.name : 'Escolher arquivo'}
+                </div>
+              </Button>
+            </label>
           </div>
           
           {/* Selected file name */}
           {selectedFile && (
-            <p className="text-sm text-gray-600">
-              Arquivo selecionado: <strong>{selectedFile.name}</strong>
-            </p>
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                ✓ Arquivo selecionado: <strong>{selectedFile.name}</strong>
+              </p>
+            </div>
           )}
           
           {/* Message */}
