@@ -7,6 +7,8 @@ import {
   upsertProductListingLink,
   getProductListingLinks,
   deleteProductListingLink,
+  upsertProductChannelStockType,
+  getProductByInternalCode,
 } from "../db";
 
 export const listingsRouter = router({
@@ -254,6 +256,133 @@ export const listingsRouter = router({
           success: false,
           price: null,
           error: error instanceof Error ? error.message : 'Erro desconhecido ao consultar preço'
+        };
+      }
+    }),
+
+  importStockFromFile: protectedProcedure
+    .input(z.object({
+      fileName: z.string(),
+      fileBase64: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        console.log(`[Stock Import] Iniciando import de estoque: ${input.fileName}`);
+        
+        // Decode base64
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        
+        // Read spreadsheet
+        const workbook = XLSX.read(buffer, { type: "buffer" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
+        
+        // Get products and channels
+        const products = await getAllProducts();
+        const channels = await getAllChannels();
+        
+        // Create channel map
+        const channelMap: Record<string, number> = {};
+        channels.forEach(ch => {
+          channelMap[ch.name.toLowerCase()] = ch.id;
+        });
+        
+        // Column mapping from header
+        const headerRow = data[0] as string[];
+        const columnMap: Record<string, number> = {};
+        
+        headerRow.forEach((col, idx) => {
+          const colLower = (col || "").toString().toLowerCase().trim();
+          columnMap[colLower] = idx;
+        });
+        
+        // Process each row
+        let recordsImported = 0;
+        
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i] as (string | number)[];
+          if (!row || row.length === 0) continue;
+          
+          const productCode = row[columnMap["cód. interno"]]?.toString().trim();
+          if (!productCode) continue;
+          
+          // Find product
+          const product = products.find(p => p.internalCode === productCode);
+          if (!product) {
+            console.warn(`[Stock Import] Produto não encontrado: ${productCode}`);
+            continue;
+          }
+          
+          // Process each column (except first one which is product code)
+          for (const [colName, colIdx] of Object.entries(columnMap)) {
+            if (colName === "cód. interno") continue;
+            
+            const value = row[colIdx];
+            if (value === undefined || value === null || value === "") continue;
+            
+            const stock = parseInt(value.toString()) || 0;
+            const colLower = colName.toLowerCase().trim();
+            
+            // Determine marketplace and stock type
+            let marketplace: string | null = null;
+            let isFullStock = false;
+            let isCrossStock = false;
+            
+            // Check for marketplace and stock type
+            if (colLower.includes("magalu")) {
+              marketplace = "Magalu";
+              if (colLower.includes("full") || colLower.includes("ful")) isFullStock = true;
+              if (colLower.includes("cnm") || colLower.includes("brin")) isCrossStock = true;
+            } else if (colLower.includes("ml ") || colLower.includes("mercado")) {
+              marketplace = "Mercado Livre";
+              if (colLower.includes("full") || colLower.includes("ful")) isFullStock = true;
+              if (colLower.includes("cnm") || colLower.includes("brin")) isCrossStock = true;
+            } else if (colLower.includes("amazon")) {
+              marketplace = "Amazon";
+              if (colLower.includes("full") || colLower.includes("ful")) isFullStock = true;
+              if (colLower.includes("cnm") || colLower.includes("brq")) isCrossStock = true;
+            } else if (colLower.includes("tk ") || colLower.includes("tiktok")) {
+              marketplace = "TikTok";
+              if (colLower.includes("full")) isFullStock = true;
+              if (colLower.includes("brin") || colLower.includes("cnm")) isCrossStock = true;
+            } else if (colLower.includes("shopee")) {
+              marketplace = "Shopee";
+              if (colLower.includes("full")) isFullStock = true;
+              if (colLower.includes("bri") || colLower.includes("cnm")) isCrossStock = true;
+            } else if (colLower.includes("cnm mind") || colLower.includes("brinquei mind")) {
+              // Cross stock without specific marketplace - skip for now
+              continue;
+            }
+            
+            if (!marketplace) continue;
+            
+            const channelId = channelMap[marketplace.toLowerCase()];
+            if (!channelId) continue;
+            
+            // Update stock
+            let fullStock = 0;
+            let crossStock = 0;
+            
+            if (isFullStock) fullStock = stock;
+            if (isCrossStock) crossStock = stock;
+            
+            await upsertProductChannelStockType(product.id, channelId, fullStock, crossStock);
+            recordsImported++;
+          }
+        }
+        
+        console.log(`[Stock Import] ${recordsImported} registros de estoque importados com sucesso`);
+        
+        return {
+          success: true,
+          recordsImported,
+        };
+      } catch (error) {
+        console.error("[Stock Import] Erro:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Erro desconhecido",
         };
       }
     }),

@@ -41,6 +41,8 @@ import {
   upsertProductStock,
   upsertMarketplaceStock,
   getAllProductsWithStock,
+  getProductChannelStockType,
+  getProductChannelStockTypes,
 } from "./db";
 
 export const appRouter = router({
@@ -395,6 +397,26 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await updateChannelGoal(input.channelId, input.dailyGoal);
         return { success: true };
+      }),
+  }),
+
+  // Product Channel Stock Types
+  productChannelStock: router({
+    getByProductAndChannel: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+        channelId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return getProductChannelStockType(input.productId, input.channelId);
+      }),
+    
+    getByProduct: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return getProductChannelStockTypes(input.productId);
       }),
   }),
 

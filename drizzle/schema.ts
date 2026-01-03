@@ -136,6 +136,24 @@ export type InsertMarketplaceStock = typeof marketplaceStock.$inferInsert;
 
 
 /**
+ * Product Channel Stock Types - Estoque FULL e CROSS por produto e marketplace
+ */
+export const productChannelStockTypes = mysqlTable("product_channel_stock_types", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  channelId: int("channelId").notNull(),
+  fullStock: int("fullStock").default(0).notNull(), // Estoque FULL
+  crossStock: int("crossStock").default(0).notNull(), // Estoque CROSS (CNM MIND, BRINQUEI MIND, etc)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  productChannelUnique: unique().on(table.productId, table.channelId),
+}));
+
+export type ProductChannelStockType = typeof productChannelStockTypes.$inferSelect;
+export type InsertProductChannelStockType = typeof productChannelStockTypes.$inferInsert;
+
+/**
  * Product Listing Links - Links dos anúncios por produto e marketplace
  */
 export const productListingLinks = mysqlTable("product_listing_links", {

@@ -10,7 +10,8 @@ import {
   importedFiles, InsertImportedFile,
   productStock, InsertProductStock, ProductStock,
   marketplaceStock, InsertMarketplaceStock, MarketplaceStock,
-  productListingLinks, InsertProductListingLink, ProductListingLink
+  productListingLinks, InsertProductListingLink, ProductListingLink,
+  productChannelStockTypes, InsertProductChannelStockType, ProductChannelStockType
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1351,5 +1352,68 @@ export async function deleteProductListingLink(
       ));
   } catch (error) {
     console.error("[DB] Error deleting product listing link:", error);
+  }
+}
+
+
+// ============ PRODUCT CHANNEL STOCK TYPES ============
+
+export async function upsertProductChannelStockType(
+  productId: number,
+  channelId: number,
+  fullStock: number,
+  crossStock: number
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    await db.insert(productChannelStockTypes).values({
+      productId,
+      channelId,
+      fullStock,
+      crossStock,
+    }).onDuplicateKeyUpdate({
+      set: { fullStock, crossStock },
+    });
+  } catch (error) {
+    console.error("[DB] Error upserting product channel stock type:", error);
+  }
+}
+
+export async function getProductChannelStockType(
+  productId: number,
+  channelId: number
+): Promise<ProductChannelStockType | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const result = await db.select()
+      .from(productChannelStockTypes)
+      .where(and(
+        eq(productChannelStockTypes.productId, productId),
+        eq(productChannelStockTypes.channelId, channelId)
+      ))
+      .limit(1);
+
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[DB] Error getting product channel stock type:", error);
+    return null;
+  }
+}
+
+export async function getProductChannelStockTypes(productId: number): Promise<ProductChannelStockType[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select()
+      .from(productChannelStockTypes)
+      .where(eq(productChannelStockTypes.productId, productId));
+  } catch (error) {
+    console.error("[DB] Error getting product channel stock types:", error);
+    return [];
   }
 }
