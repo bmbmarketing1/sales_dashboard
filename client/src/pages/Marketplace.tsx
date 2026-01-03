@@ -437,9 +437,8 @@ export default function Marketplace() {
             <CardContent>
               <div className="space-y-2">
                 {filteredProducts.map((product) => (
-                  <>
+                  <div key={product.id}>
                     <div
-                      key={product.id}
                       className="flex items-center gap-4 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
                     >
                     <div className={cn(
@@ -503,7 +502,7 @@ export default function Marketplace() {
                         <LinkIcon className="w-4 h-4" />
                         Links
                       </Button>
-                    </div>
+                      </div>
                     </div>
                     
                     {/* Expanded links section */}
@@ -517,7 +516,7 @@ export default function Marketplace() {
                         />
                       </div>
                     )}
-                  </>
+                  </div>
                 ))}
               </div>
             </CardContent>

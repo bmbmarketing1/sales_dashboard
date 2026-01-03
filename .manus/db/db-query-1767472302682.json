@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, productId, channelId, listingUrl FROM product_listing_links;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT id, productId, channelId, listingUrl FROM product_listing_links;",
+  "rows": [
+    {
+      "id": "1",
+      "productId": "122672",
+      "channelId": "1",
+      "listingUrl": "https://www.amazon.com.br/Escorredor-Lou%C3%A7a-Madeira-Talheres-Bandeja/dp/B0FPGH979Q?ref_=ast_sto_dp"
+    },
+    {
+      "id": "2",
+      "productId": "122672",
+      "channelId": "3",
+      "listingUrl": "https://produto.mercadolivre.com.br/MLB-5726970862-escorredor-de-louca-de-pia-com-bandeja-e-alca-de-bambu-preto-_JM"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tproductId\tchannelId\tlistingUrl\n1\t122672\t1\thttps://www.amazon.com.br/Escorredor-Lou%C3%A7a-Madeira-Talheres-Bandeja/dp/B0FPGH979Q?ref_=ast_sto_dp\n2\t122672\t3\thttps://produto.mercadolivre.com.br/MLB-5726970862-escorredor-de-louca-de-pia-com-bandeja-e-alca-de-bambu-preto-_JM\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}
