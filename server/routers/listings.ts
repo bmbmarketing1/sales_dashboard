@@ -1,4 +1,5 @@
-import { protectedProcedure, router } from "../_core/trpc";
+import { eq, and } from "drizzle-orm";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
 import {
@@ -9,7 +10,9 @@ import {
   deleteProductListingLink,
   upsertProductChannelStockType,
   getProductByInternalCode,
+  getDb,
 } from "../db";
+import { productChannelStockTypes } from "../../drizzle/schema";
 
 export const listingsRouter = router({
   importFromFile: protectedProcedure
@@ -384,6 +387,29 @@ export const listingsRouter = router({
           success: false,
           error: error instanceof Error ? error.message : "Erro desconhecido",
         };
+      }
+    }),
+  getByProductAndChannel: publicProcedure
+    .input(z.object({
+      productId: z.number(),
+      channelId: z.number(),
+    }))
+    .query(async ({ input }: any) => {
+      try {
+        const db = await getDb();
+        if (!db) return null;
+        
+        const result = await db.select().from(productChannelStockTypes)
+          .where(and(
+            eq(productChannelStockTypes.productId, input.productId),
+            eq(productChannelStockTypes.channelId, input.channelId)
+          ))
+          .limit(1);
+        
+        return result?.[0] || null;
+      } catch (error) {
+        console.error('[Stock Query] Erro:', error);
+        return null;
       }
     }),
 });

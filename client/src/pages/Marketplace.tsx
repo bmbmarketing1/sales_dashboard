@@ -469,12 +469,17 @@ export default function Marketplace() {
                         <Thermometer value={product.totalSales} goal={product.periodGoal} size="sm" showLabel={false} />
                       </div>
                       
-                      <div className={cn(
-                        "w-16 text-right font-bold",
-                        product.percentage >= 100 ? "text-green-600" :
-                        product.percentage >= 50 ? "text-yellow-600" : "text-red-600"
-                      )}>
-                        {product.percentage}%
+                      <div className="text-right">
+                        <div className="text-xs text-gray-600 mb-1">
+                          FULL - 0
+                        </div>
+                        <div className={cn(
+                          "w-16 text-right font-bold",
+                          product.percentage >= 100 ? "text-green-600" :
+                          product.percentage >= 50 ? "text-yellow-600" : "text-red-600"
+                        )}>
+                          {product.percentage}%
+                        </div>
                       </div>
                       
                       <Button 

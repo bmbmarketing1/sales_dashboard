@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Thermometer } from "./Thermometer";
 import { GoalEditor } from "./GoalEditor";
@@ -58,10 +59,31 @@ interface ProductRowProps {
   periodDays?: number;
 }
 
-export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 30 }: ProductRowProps) {
+interface ProductRowPropsWithChannel extends ProductRowProps {
+  channelId?: number;
+}
+
+export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 30, channelId }: ProductRowPropsWithChannel) {
   const [expanded, setExpanded] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
   const [goalEditorOpen, setGoalEditorOpen] = useState(false);
+  const [stockData, setStockData] = useState<{ fullStock: number; crossStock: number } | null>(null);
+  
+  const stockQuery = channelId && product.id ? trpc.listings.getByProductAndChannel.useQuery({
+    productId: product.id,
+    channelId: channelId,
+  }) : null;
+  const stock = stockQuery?.data || null;
+  
+  useEffect(() => {
+    if (stock) {
+      setStockData({
+        fullStock: stock.fullStock || 0,
+        crossStock: stock.crossStock || 0
+      });
+    }
+  }, [stock]);
+  
   
   // Calcular média de vendas por dia usando o período correto
   const averageSalesPerDay = periodDays > 0 ? product.totalSales / periodDays : 0;
@@ -149,6 +171,12 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
           </div>
           
           {/* Stock with Risk Indicator */}
+          {/* Estoque por tipo (FULL e CROSS) */}
+          {stockData && (
+            <div className="text-xs text-gray-600 mb-1">
+              FULL - {stockData.fullStock} | CROSS - {stockData.crossStock}
+            </div>
+          )}
           <div className="flex items-center gap-2 shrink-0 min-w-[120px]">
             <div className="text-right flex-1">
               <div className="flex items-center gap-2 justify-end">
