@@ -2,7 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, Loader2, AlertCircle, Edit2, Trash2 } from "lucide-react";
+import { ExternalLink, Loader2, AlertCircle, Edit2, Trash2, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EditListingModal } from "./EditListingModal";
 import { AddListingForm } from "./AddListingForm";
@@ -32,6 +32,7 @@ export function ProductListingLinks({
   const [isExpanded, setIsExpanded] = useState(false);
   const [editingLink, setEditingLink] = useState<{ id: number; channelId: number; url: string } | null>(null);
   const [deletingLink, setDeletingLink] = useState<{ id: number; channelId: number } | null>(null);
+  const [priceData, setPriceData] = useState<Record<number, { price: number | null; formatted: string; loading: boolean; error: string | null; marketplace: string }>>({});
   
   const { data: links, isLoading, refetch } = trpc.listings.getByProduct.useQuery(
     { productId },
@@ -46,6 +47,56 @@ export function ProductListingLinks({
       refetch();
     },
   });
+
+  const handleGetPrice = async (linkId: number, url: string, channelId: number) => {
+    setPriceData(prev => ({
+      ...prev,
+      [linkId]: { price: null, formatted: '', loading: true, error: null, marketplace: '' }
+    }));
+
+    try {
+      const response = await fetch('/api/trpc/listings.getListingPrice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input: { url } })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const result = data.result?.data;
+      
+      if (!result) {
+        throw new Error('Resposta inválida do servidor');
+      }
+      
+      setPriceData(prev => ({
+        ...prev,
+        [linkId]: {
+          price: result.price,
+          formatted: result.priceFormatted || '',
+          loading: false,
+          error: result.error,
+          marketplace: result.marketplace || ''
+        }
+      }));
+    } catch (error) {
+      setPriceData(prev => ({
+        ...prev,
+        [linkId]: {
+          price: null,
+          formatted: '',
+          loading: false,
+          error: error instanceof Error ? error.message : 'Erro ao consultar preço',
+          marketplace: ''
+        }
+      }));
+    }
+  };
 
   const handleDelete = async () => {
     if (!deletingLink) return;
@@ -106,53 +157,86 @@ export function ProductListingLinks({
                 .map((link) => (
                 <div
                   key={link.id}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+                  className="flex flex-col p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-700">
-                      {link.channelId === 1 ? "Amazon" :
-                       link.channelId === 2 ? "Magalu" :
-                       link.channelId === 3 ? "Mercado Livre" :
-                       link.channelId === 4 ? "Shopee" :
-                       link.channelId === 5 ? "TikTok" : `Canal ${link.channelId}`}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate mt-1">
-                      {link.listingUrl}
-                    </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-700">
+                        {link.channelId === 1 ? "Amazon" :
+                         link.channelId === 2 ? "Magalu" :
+                         link.channelId === 3 ? "Mercado Livre" :
+                         link.channelId === 4 ? "Shopee" :
+                         link.channelId === 5 ? "TikTok" : `Canal ${link.channelId}`}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate mt-1">
+                        {link.listingUrl}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 ml-2 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleGetPrice(link.id, link.listingUrl, link.channelId)}
+                        disabled={priceData[link.id]?.loading}
+                        title="Consultar preço"
+                      >
+                        {priceData[link.id]?.loading ? (
+                          <Loader2 className="w-4 h-4 text-green-600 animate-spin" />
+                        ) : (
+                          <DollarSign className="w-4 h-4 text-green-600" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingLink({ id: link.id, channelId: link.channelId, url: link.listingUrl })}
+                        title="Editar link"
+                      >
+                        <Edit2 className="w-4 h-4 text-blue-600" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeletingLink({ id: link.id, channelId: link.channelId })}
+                        title="Deletar link"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                      >
+                        <a href={link.listingUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 ml-2 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingLink({ id: link.id, channelId: link.channelId, url: link.listingUrl })}
-                      title="Editar link"
-                    >
-                      <Edit2 className="w-4 h-4 text-blue-600" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeletingLink({ id: link.id, channelId: link.channelId })}
-                      title="Deletar link"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                    >
-                      <a href={link.listingUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    </Button>
-                  </div>
+
+                  {priceData[link.id] && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      {priceData[link.id].error ? (
+                        <p className="text-xs text-red-600">{priceData[link.id].error}</p>
+                      ) : priceData[link.id].formatted ? (
+                        <div>
+                          <p className="text-sm font-semibold text-green-700">
+                            Preço: {priceData[link.id].formatted}
+                          </p>
+                          {priceData[link.id].marketplace && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Consultado em: {priceData[link.id].marketplace}
+                            </p>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
 
-          {/* Add Link Form */}
           {channels && (
             <AddListingForm
               productId={productId}
@@ -163,7 +247,6 @@ export function ProductListingLinks({
         </CardContent>
       </Card>
 
-      {/* Edit Modal */}
       {editingLink && (
         <EditListingModal
           productId={productId}
@@ -176,7 +259,6 @@ export function ProductListingLinks({
         />
       )}
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deletingLink} onOpenChange={(open) => !open && setDeletingLink(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

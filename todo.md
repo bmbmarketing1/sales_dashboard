@@ -268,3 +268,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Corrigir interface: adicionar botão "Ver Links de Anúncios" na seção expandida do produto
 - [x] Permitir acesso intuitivo ao formulário de adição de links sem navegação separada
 - [x] Testar fluxo completo: expandir produto → ver links → adicionar link
+
+
+## Consulta de Preço da Amazon
+
+- [ ] Criar API para consultar preço da Amazon via web scraping
+- [ ] Adicionar botão "Consultar Preço" no card de links
+- [ ] Exibir preço consultado no card de links
+- [ ] Testar funcionalidade de consulta de preço

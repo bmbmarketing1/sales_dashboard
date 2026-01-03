@@ -1,4 +1,4 @@
-import { router, protectedProcedure } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
 import {
@@ -160,6 +160,91 @@ export const listingsRouter = router({
       } catch (error) {
         console.error("[Listings Create] Erro:", error);
         throw new Error(`Erro ao criar link: ${error instanceof Error ? error.message : 'Desconhecido'}`);
+      }
+    }),
+
+  getListingPrice: protectedProcedure
+    .input(z.object({
+      url: z.string().url(),
+    }))
+    .query(async ({ input }) => {
+      try {
+        console.log(`[Listing Price] Consultando preço: ${input.url}`);
+        
+        const response = await fetch(input.url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const html = await response.text();
+        let price = null;
+        let marketplace = 'Desconhecido';
+        
+        // Detectar marketplace e extrair preço
+        if (input.url.includes('mercadolivre')) {
+          marketplace = 'Mercado Livre';
+          const jsonLdMatch = html.match(/"price":(\d+\.?\d*)/);
+          if (jsonLdMatch) {
+            price = jsonLdMatch[1];
+          }
+        } else if (input.url.includes('amazon')) {
+          marketplace = 'Amazon';
+          const patterns = [
+            /R\$\s*([0-9.,]+)/,
+            /"price":\s*"?([0-9.,]+)/i,
+            /priceAmount["']:\s*["']([0-9.,]+)/,
+          ];
+          
+          for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match) {
+              price = match[1];
+              break;
+            }
+          }
+        } else if (input.url.includes('shopee')) {
+          marketplace = 'Shopee';
+          const priceMatch = html.match(/"price":(\d+)/);
+          if (priceMatch) {
+            price = (parseInt(priceMatch[1]) / 100000).toString();
+          }
+        } else if (input.url.includes('magazineluiza')) {
+          marketplace = 'Magalu';
+          const priceMatch = html.match(/"price":(\d+\.?\d*)/);
+          if (priceMatch) {
+            price = priceMatch[1];
+          }
+        }
+        
+        if (!price) {
+          return {
+            success: false,
+            price: null,
+            error: `Não foi possível extrair o preço da página (${marketplace})`
+          };
+        }
+        
+        const normalizedPrice = parseFloat(price.toString().replace(/\./g, '').replace(',', '.'));
+        
+        return {
+          success: true,
+          price: normalizedPrice,
+          priceFormatted: `R$ ${normalizedPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          marketplace: marketplace,
+          error: null
+        };
+      } catch (error) {
+        console.error("[Listing Price] Erro:", error);
+        return {
+          success: false,
+          price: null,
+          error: error instanceof Error ? error.message : 'Erro desconhecido ao consultar preço'
+        };
       }
     }),
 });
