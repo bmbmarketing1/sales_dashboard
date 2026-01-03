@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Thermometer } from "@/components/Thermometer";
 import { ProductListingLinks } from "@/components/ProductListingLinks";
+import { StockDisplay } from "@/components/StockDisplay";
 import {
   Dialog,
   DialogContent,
@@ -469,10 +470,9 @@ export default function Marketplace() {
                         <Thermometer value={product.totalSales} goal={product.periodGoal} size="sm" showLabel={false} />
                       </div>
                       
+                      <StockDisplay productId={product.id} channelId={channelId} />
+                      
                       <div className="text-right">
-                        <div className="text-xs text-gray-600 mb-1">
-                          FULL - 0
-                        </div>
                         <div className={cn(
                           "w-16 text-right font-bold",
                           product.percentage >= 100 ? "text-green-600" :

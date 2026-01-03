@@ -76,6 +76,7 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
   const stock = stockQuery?.data || null;
   
   useEffect(() => {
+    console.log('[ProductRow] Stock data:', stock);
     if (stock) {
       setStockData({
         fullStock: stock.fullStock || 0,
@@ -83,6 +84,10 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
       });
     }
   }, [stock]);
+  
+  useEffect(() => {
+    console.log('[ProductRow] Query result:', stockQuery);
+  }, [stockQuery]);
   
   
   // Calcular média de vendas por dia usando o período correto
@@ -173,14 +178,16 @@ export function ProductRow({ product, onGoalUpdated, periodLabel, periodDays = 3
           {/* Stock with Risk Indicator */}
           {/* Estoque por tipo (FULL e CROSS) */}
           {stockData && (
-            <div className="text-xs text-gray-600 mb-1">
-              FULL - {stockData.fullStock} | CROSS - {stockData.crossStock}
+            <div className="text-right shrink-0">
+              <div className="text-xs text-gray-600 font-medium">
+                Full - {stockData.fullStock} / Cross: {stockData.crossStock}
+              </div>
             </div>
           )}
-          <div className="flex items-center gap-2 shrink-0 min-w-[120px]">
+          <div className="flex items-center gap-2 shrink-0 min-w-[100px]">
             <div className="text-right flex-1">
               <div className="flex items-center gap-2 justify-end">
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="text-xs font-semibold text-gray-700">
                   {product.totalStock || 0}
                 </span>
                 {product.riskLevel === 'red' && (

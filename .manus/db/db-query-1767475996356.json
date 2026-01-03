@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, internalCode FROM products WHERE internalCode = 'BL001';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT id, internalCode FROM products WHERE internalCode = 'BL001';",
+  "rows": [
+    {
+      "id": "122672",
+      "internalCode": "BL001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tinternalCode\n122672\tBL001\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}
