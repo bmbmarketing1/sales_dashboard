@@ -1485,7 +1485,10 @@ export async function getRevenueByCategory(startDate: string, endDate: string) {
 
 export async function generateSalesReport(startDate: string, endDate: string) {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) {
+    console.error("[generateSalesReport] Database not available");
+    return [];
+  }
   
   const allProducts = await getAllProducts();
   
@@ -1499,16 +1502,26 @@ export async function generateSalesReport(startDate: string, endDate: string) {
   const end = new Date(endDate);
   const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
+  // Get all stock data
+  const stockData = await db.select()
+    .from(productChannelStockTypes);
+  console.log("[generateSalesReport] allProducts:", allProducts.length, "sales:", sales.length, "stocks:", stockData.length);
+  
   // Generate report data
   const reportData = allProducts.map(product => {
     const productSales = sales.filter(s => s.productId === product.id);
     const totalSales = productSales.reduce((sum, s) => sum + s.quantity, 0);
     const avgSalesPerDay = totalSales / daysInPeriod;
+    const productStocks = stockData.filter(s => s.productId === product.id);
+    const totalFullStock = productStocks.reduce((sum, s) => sum + (s.fullStock || 0), 0);
+    const totalCrossStock = productStocks.length > 0 ? productStocks[0].crossStock || 0 : 0;
     
     return {
       sku: product.internalCode,
       description: product.description,
       avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
+      fullStock: totalFullStock,
+      crossStock: totalCrossStock,
       totalSales,
       daysInPeriod,
     };

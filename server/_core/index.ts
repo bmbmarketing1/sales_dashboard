@@ -54,6 +54,8 @@ async function startServer() {
           SKU: item.sku,
           "Descricao": item.description,
           "Media de Vendas/dia": item.avgSalesPerDay,
+          "Estoque FULL": item.fullStock,
+          "Estoque CROSS": item.crossStock,
         }))
       );
       
@@ -61,6 +63,8 @@ async function startServer() {
         { wch: 12 },
         { wch: 40 },
         { wch: 18 },
+        { wch: 14 },
+        { wch: 14 },
       ];
       
       const wb = XLSX.utils.book_new();

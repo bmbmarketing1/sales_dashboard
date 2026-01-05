@@ -322,3 +322,9 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Adicionar endpoint de download de relatório no backend
 - [x] Criar botão de exportação na interface
 - [x] Testar exportação com dados reais
+
+
+## Melhorias na Exportação de Excel
+
+- [x] Adicionar colunas de estoque FULL e CROSS na planilha
+- [x] Adicionar linha GERAL com totais de estoque e média geral
