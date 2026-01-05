@@ -26,7 +26,23 @@ export const stockRouter = router({
         
         // XLSX.read suporta tanto .xlsx quanto .xls antigos
         const workbook = XLSX.read(buffer, { type: "buffer" });
-        const sheetName = workbook.SheetNames[0];
+        
+        // Procurar pela aba correta de estoque (pode ser "Planilha1" ou a segunda aba)
+        let sheetName = workbook.SheetNames[0];
+        
+        // Se houver múltiplas abas, procurar por "Planilha1" ou usar a segunda aba
+        if (workbook.SheetNames.length > 1) {
+          const planilha1Index = workbook.SheetNames.findIndex(name => name === "Planilha1");
+          if (planilha1Index !== -1) {
+            sheetName = workbook.SheetNames[planilha1Index];
+            console.log(`[Stock Upload] Usando aba: ${sheetName}`);
+          } else {
+            // Se não encontrar "Planilha1", usar a segunda aba
+            sheetName = workbook.SheetNames[1];
+            console.log(`[Stock Upload] Usando segunda aba: ${sheetName}`);
+          }
+        }
+        
         const worksheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
         

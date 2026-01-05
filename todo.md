@@ -328,3 +328,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 
 - [x] Adicionar colunas de estoque FULL e CROSS na planilha
 - [x] Adicionar linha GERAL com totais de estoque e média geral
+
+
+## Bug - Atualização de Estoque Não Funciona
+
+- [x] Analisar planilha Estoque-05-01-2026.xls para entender o problema
+- [x] Identificar por que a função de importação não está atualizando os dados
+- [x] Corrigir lógica de atualização de estoque
+- [x] Testar atualização com nova planilha
