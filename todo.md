@@ -314,3 +314,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Criar componente de cards de faturamento por linha (Rodados, Brinquedos, Utilidades, Bebês)
 - [x] Integrar cards na tela inicial após cards de resumo geral
 - [x] Testar em múltiplos períodos (7 dias, 15 dias, 30 dias, Mês)
+
+
+## Exportação de Relatório em Excel
+
+- [x] Criar função de geração de Excel com SKU, Descrição e Média de Vendas
+- [x] Adicionar endpoint de download de relatório no backend
+- [x] Criar botão de exportação na interface
+- [x] Testar exportação com dados reais

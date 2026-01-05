@@ -44,6 +44,7 @@ import {
   getProductChannelStockType,
   getProductChannelStockTypes,
   getRevenueByCategory,
+  generateSalesReport,
 } from "./db";
 
 export const appRouter = router({
@@ -342,6 +343,15 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return getRevenueByCategory(input.startDate, input.endDate);
+      }),
+    
+    downloadReport: publicProcedure
+      .input(z.object({
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return generateSalesReport(input.startDate, input.endDate);
       }),
   }),
 

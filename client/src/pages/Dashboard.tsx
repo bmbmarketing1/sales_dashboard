@@ -15,6 +15,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { StockUpload } from "@/components/StockUpload";
 import { ListingsUpload } from "@/components/ListingsUpload";
 import { RevenueByCategoryCards } from "@/components/RevenueByCategoryCards";
+import { ExportReportButton } from "@/components/ExportReportButton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
@@ -602,7 +603,10 @@ export default function Dashboard() {
         
         {/* Revenue by Category Cards */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">Faturamento por Linha de Produto</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-800">Faturamento por Linha de Produto</h2>
+            <ExportReportButton startDate={startDate} endDate={endDate} periodLabel={getPeriodLabel()} />
+          </div>
           <RevenueByCategoryCards data={revenueByCategory || []} isLoading={revenueLoading} />
         </div>
         

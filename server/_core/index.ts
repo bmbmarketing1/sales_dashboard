@@ -35,6 +35,48 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // Export report endpoint
+  app.get("/api/export/report", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate || typeof startDate !== 'string' || typeof endDate !== 'string') {
+        return res.status(400).json({ error: "Missing or invalid startDate/endDate" });
+      }
+      
+      const { generateSalesReport } = await import("../db");
+      const reportData = await generateSalesReport(startDate, endDate);
+      
+      const XLSX = await import("xlsx");
+      const ws = XLSX.utils.json_to_sheet(
+        reportData.map((item: any) => ({
+          SKU: item.sku,
+          "Descricao": item.description,
+          "Media de Vendas/dia": item.avgSalesPerDay,
+        }))
+      );
+      
+      ws['!cols'] = [
+        { wch: 12 },
+        { wch: 40 },
+        { wch: 18 },
+      ];
+      
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Relatorio de Vendas");
+      
+      const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="Relatorio_Vendas_${startDate}_${endDate}.xlsx"`);
+      res.send(buffer);
+    } catch (error: any) {
+      console.error("Export error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",

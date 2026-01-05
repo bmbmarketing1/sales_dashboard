@@ -1480,3 +1480,39 @@ export async function getRevenueByCategory(startDate: string, endDate: string) {
   
   return result;
 }
+
+// ============ REPORT GENERATION ============
+
+export async function generateSalesReport(startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const allProducts = await getAllProducts();
+  
+  // Get all sales in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
+  
+  // Calculate days in period
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Generate report data
+  const reportData = allProducts.map(product => {
+    const productSales = sales.filter(s => s.productId === product.id);
+    const totalSales = productSales.reduce((sum, s) => sum + s.quantity, 0);
+    const avgSalesPerDay = totalSales / daysInPeriod;
+    
+    return {
+      sku: product.internalCode,
+      description: product.description,
+      avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
+      totalSales,
+      daysInPeriod,
+    };
+  });
+  
+  return reportData;
+}
