@@ -1,0 +1,65 @@
+{
+  "query": "SELECT \n  p.id, \n  p.internalCode, \n  p.description,\n  ps.crossdockingStock,\n  pcst.productId,\n  pcst.channelId,\n  pcst.fullStock,\n  pcst.crossStock,\n  c.name as channelName\nFROM products p\nLEFT JOIN product_stock ps ON p.id = ps.productId\nLEFT JOIN product_channel_stock_types pcst ON p.id = pcst.productId\nLEFT JOIN channels c ON pcst.channelId = c.id\nWHERE p.internalCode = 'BL001'\nORDER BY c.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT \n  p.id, \n  p.internalCode, \n  p.description,\n  ps.crossdockingStock,\n  pcst.productId,\n  pcst.channelId,\n  pcst.fullStock,\n  pcst.crossStock,\n  c.name as channelName\nFROM products p\nLEFT JOIN product_stock ps ON p.id = ps.productId\nLEFT JOIN product_channel_stock_types pcst ON p.id = pcst.productId\nLEFT JOIN channels c ON pcst.channelId = c.id\nWHERE p.internalCode = 'BL001'\nORDER BY c.name;",
+  "rows": [
+    {
+      "id": "122672",
+      "internalCode": "BL001",
+      "description": "ESCORREDOR DE LOUÇAS",
+      "crossdockingStock": "540",
+      "productId": "122672",
+      "channelId": "1",
+      "fullStock": "0",
+      "crossStock": "500",
+      "channelName": "Amazon"
+    },
+    {
+      "id": "122672",
+      "internalCode": "BL001",
+      "description": "ESCORREDOR DE LOUÇAS",
+      "crossdockingStock": "540",
+      "productId": "122672",
+      "channelId": "2",
+      "fullStock": "60",
+      "crossStock": "500",
+      "channelName": "Magalu"
+    },
+    {
+      "id": "122672",
+      "internalCode": "BL001",
+      "description": "ESCORREDOR DE LOUÇAS",
+      "crossdockingStock": "540",
+      "productId": "122672",
+      "channelId": "3",
+      "fullStock": "0",
+      "crossStock": "500",
+      "channelName": "Mercado Livre"
+    },
+    {
+      "id": "122672",
+      "internalCode": "BL001",
+      "description": "ESCORREDOR DE LOUÇAS",
+      "crossdockingStock": "540",
+      "productId": "122672",
+      "channelId": "4",
+      "fullStock": "0",
+      "crossStock": "500",
+      "channelName": "Shopee"
+    },
+    {
+      "id": "122672",
+      "internalCode": "BL001",
+      "description": "ESCORREDOR DE LOUÇAS",
+      "crossdockingStock": "540",
+      "productId": "122672",
+      "channelId": "5",
+      "fullStock": "0",
+      "crossStock": "500",
+      "channelName": "TikTok"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tinternalCode\tdescription\tcrossdockingStock\tproductId\tchannelId\tfullStock\tcrossStock\tchannelName\n122672\tBL001\tESCORREDOR DE LOUÇAS\t540\t122672\t1\t0\t500\tAmazon\n122672\tBL001\tESCORREDOR DE LOUÇAS\t540\t122672\t2\t60\t500\tMagalu\n122672\tBL001\tESCORREDOR DE LOUÇAS\t540\t122672\t3\t0\t500\tMercado Livre\n122672\tBL001\tESCORREDOR DE LOUÇAS\t540\t122672\t4\t0\t500\tShopee\n122672\tBL001\tESCORREDOR DE LOUÇAS\t540\t122672\t5\t0\t500\tTikTok\n",
+  "stderr": "",
+  "execution_time_ms": 1543
+}

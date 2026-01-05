@@ -25,7 +25,6 @@ interface StockProduct {
   internalCode: string;
   description: string;
   totalStock: number;
-  crossdockingStock: number;
   daysOfStockAvailable: number;
   stockCoveragePercentage: number;
   riskLevel: 'green' | 'yellow' | 'red';
@@ -267,9 +266,6 @@ export default function StockAnalysis() {
                       </td>
                       <td className="py-4">
                         <p className="font-semibold">{product.totalStock}</p>
-                        <p className="text-xs text-gray-500">
-                          {product.crossdockingStock} CD
-                        </p>
                       </td>
                       <td className="py-4">
                         <p className="font-semibold">

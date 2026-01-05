@@ -438,12 +438,12 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     const periodGoal = effectiveDailyGoal * daysInPeriod;
     
     // Get stock info - sum all FULL stocks from all channels + CROSS stock
-    const stock = allStocks.find(s => s.productId === product.id);
-    const crossdockingStock = stock?.crossdockingStock || 0;
-    const fullStocks = allChannelStocks
-      .filter(cs => cs.productId === product.id)
-      .reduce((sum, cs) => sum + (cs.fullStock || 0), 0);
-    const totalStock = fullStocks + crossdockingStock;
+    // IMPORTANT: Use crossStock from productChannelStockTypes (not product_stock.crossdockingStock)
+    const productChannelStocks = allChannelStocks.filter(cs => cs.productId === product.id);
+    const fullStocks = productChannelStocks.reduce((sum, cs) => sum + (cs.fullStock || 0), 0);
+    // Get CROSS stock from first channel (it's the same for all channels)
+    const crossStock = productChannelStocks.length > 0 ? (productChannelStocks[0].crossStock || 0) : 0;
+    const totalStock = fullStocks + crossStock;
     
     // Calculate stock metrics
     const avgSalesPerDay = totalSales / daysInPeriod;
@@ -459,7 +459,6 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     }
     
     // Calculate marketplace distribution
-    const productChannelStocks = allChannelStocks.filter(cs => cs.productId === product.id);
     const marketplaceDistribution = allChannels.map(channel => {
       const channelStock = productChannelStocks.find(cs => cs.channelId === channel.id);
       const stock = channelStock?.fullStock || 0;
@@ -487,7 +486,6 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
       totalRevenue,
       avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
       channelSales,
-      crossdockingStock,
       totalStock,
       daysOfStockAvailable,
       stockCoveragePercentage,
@@ -1144,12 +1142,12 @@ export async function getAllProductsWithStock(startDate: string, endDate: string
     const avgSalesPerDay = totalSales / daysInPeriod;
     
     // Get stock info - sum all FULL stocks from all channels + CROSS stock
-    const stock = allStocks.find(s => s.productId === product.id);
-    const crossdockingStock = stock?.crossdockingStock || 0;
-    const fullStocks = allChannelStocks
-      .filter(cs => cs.productId === product.id)
-      .reduce((sum, cs) => sum + (cs.fullStock || 0), 0);
-    const totalStock = fullStocks + crossdockingStock;
+    // IMPORTANT: Use crossStock from productChannelStockTypes (not product_stock.crossdockingStock)
+    const productChannelStocks = allChannelStocks.filter(cs => cs.productId === product.id);
+    const fullStocks = productChannelStocks.reduce((sum, cs) => sum + (cs.fullStock || 0), 0);
+    // Get CROSS stock from first channel (it's the same for all channels)
+    const crossStock = productChannelStocks.length > 0 ? (productChannelStocks[0].crossStock || 0) : 0;
+    const totalStock = fullStocks + crossStock;
     
     // Calculate stock coverage
     const daysOfStockAvailable = avgSalesPerDay > 0 ? Math.round(totalStock / avgSalesPerDay) : 0;
@@ -1170,7 +1168,6 @@ export async function getAllProductsWithStock(startDate: string, endDate: string
       dailyGoal,
       periodGoal,
       avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
-      crossdockingStock,
       totalStock,
       daysOfStockAvailable,
       stockCoveragePercentage,

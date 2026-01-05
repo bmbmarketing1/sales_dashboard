@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \n  p.internalCode,\n  ps.crossdockingStock,\n  ps.lastUpdated\nFROM products p\nLEFT JOIN product_stock ps ON p.id = ps.productId\nWHERE p.internalCode = 'BL001';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2tDCoiftG3qjZjj.5b66511f9aa5 --database CVZ7vhL7YTVF6G9KYmzLvT --execute SELECT \n  p.internalCode,\n  ps.crossdockingStock,\n  ps.lastUpdated\nFROM products p\nLEFT JOIN product_stock ps ON p.id = ps.productId\nWHERE p.internalCode = 'BL001';",
+  "rows": [
+    {
+      "internalCode": "BL001",
+      "crossdockingStock": "540",
+      "lastUpdated": "2025-12-30"
+    }
+  ],
+  "messages": [],
+  "stdout": "internalCode\tcrossdockingStock\tlastUpdated\nBL001\t540\t2025-12-30\n",
+  "stderr": "",
+  "execution_time_ms": 1588
+}
