@@ -1438,3 +1438,45 @@ export async function getProductChannelStockTypes(productId: number): Promise<Pr
     return [];
   }
 }
+
+// ============ REVENUE BY CATEGORY ============
+
+export async function getRevenueByCategory(startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const allProducts = await getAllProducts();
+  
+  // Get all sales in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`);
+  
+  // Group by category
+  const categoryMap = new Map<string, { revenue: number; quantity: number }>();
+  
+  allProducts.forEach(product => {
+    const category = product.category || 'Sem Categoria';
+    const productSales = sales.filter(s => s.productId === product.id);
+    const categoryRevenue = productSales.reduce((sum, s) => sum + (s.revenue || 0), 0);
+    const categoryQuantity = productSales.reduce((sum, s) => sum + s.quantity, 0);
+    
+    if (!categoryMap.has(category)) {
+      categoryMap.set(category, { revenue: 0, quantity: 0 });
+    }
+    
+    const current = categoryMap.get(category)!;
+    current.revenue += categoryRevenue;
+    current.quantity += categoryQuantity;
+  });
+  
+  // Convert to array and sort by revenue
+  const result = Array.from(categoryMap.entries()).map(([category, data]) => ({
+    category,
+    revenue: data.revenue,
+    quantity: data.quantity,
+    formattedRevenue: (data.revenue / 100).toFixed(2), // Convert from cents to real
+  })).sort((a, b) => b.revenue - a.revenue);
+  
+  return result;
+}

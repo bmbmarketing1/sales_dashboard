@@ -306,3 +306,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] ALERTA SUFICIENTE (verde): Estoque cobre 30-60 dias
 - [x] ALERTA EXCEDENTE (azul): Estoque cobre > 60 dias
 - [x] Testar em múltiplos produtos e marketplaces
+
+
+## Cards de Faturamento por Linha de Produto
+
+- [x] Adicionar query de faturamento por categoria no backend
+- [x] Criar componente de cards de faturamento por linha (Rodados, Brinquedos, Utilidades, Bebês)
+- [x] Integrar cards na tela inicial após cards de resumo geral
+- [x] Testar em múltiplos períodos (7 dias, 15 dias, 30 dias, Mês)

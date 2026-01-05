@@ -14,6 +14,7 @@ import { ProductUpload } from "@/components/ProductUpload";
 import { ImageUpload } from "@/components/ImageUpload";
 import { StockUpload } from "@/components/StockUpload";
 import { ListingsUpload } from "@/components/ListingsUpload";
+import { RevenueByCategoryCards } from "@/components/RevenueByCategoryCards";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
@@ -214,6 +215,12 @@ export default function Dashboard() {
   
   // Fetch categories
   const { data: categories, refetch: refetchCategories } = trpc.categories.list.useQuery();
+  
+  // Fetch revenue by category
+  const { data: revenueByCategory, isLoading: revenueLoading } = trpc.marketplace.revenueByCategory.useQuery(
+    { startDate, endDate },
+    { enabled: !!startDate && !!endDate }
+  );
   
   const handleImportSuccess = () => {
     refetchSales();
@@ -591,6 +598,12 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+        
+        {/* Revenue by Category Cards */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-800">Faturamento por Linha de Produto</h2>
+          <RevenueByCategoryCards data={revenueByCategory || []} isLoading={revenueLoading} />
         </div>
         
         <Tabs defaultValue="products" className="space-y-4">

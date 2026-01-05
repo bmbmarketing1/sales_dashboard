@@ -43,6 +43,7 @@ import {
   getAllProductsWithStock,
   getProductChannelStockType,
   getProductChannelStockTypes,
+  getRevenueByCategory,
 } from "./db";
 
 export const appRouter = router({
@@ -332,6 +333,15 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return getProductChannelHistory(input.productId, input.channelId, input.days);
+      }),
+    
+    revenueByCategory: publicProcedure
+      .input(z.object({
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getRevenueByCategory(input.startDate, input.endDate);
       }),
   }),
 
