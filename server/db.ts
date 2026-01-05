@@ -437,12 +437,13 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     const effectiveDailyGoal = calculatedDailyGoal > 0 ? calculatedDailyGoal : product.dailyGoal;
     const periodGoal = effectiveDailyGoal * daysInPeriod;
     
-    // Get stock info
+    // Get stock info - sum all FULL stocks from all channels + CROSS stock
     const stock = allStocks.find(s => s.productId === product.id);
     const crossdockingStock = stock?.crossdockingStock || 0;
-    const totalStock = crossdockingStock + (allMarketplaceStocks
+    const fullStocks = allMarketplaceStocks
       .filter(ms => ms.productId === product.id)
-      .reduce((sum, ms) => sum + ms.stock, 0) || 0);
+      .reduce((sum, ms) => sum + (ms.stock || 0), 0);
+    const totalStock = fullStocks + crossdockingStock;
     
     // Calculate stock metrics
     const avgSalesPerDay = totalSales / daysInPeriod;
@@ -1142,12 +1143,13 @@ export async function getAllProductsWithStock(startDate: string, endDate: string
     const periodGoal = dailyGoal * daysInPeriod;
     const avgSalesPerDay = totalSales / daysInPeriod;
     
-    // Get stock info
+    // Get stock info - sum all FULL stocks from all channels + CROSS stock
     const stock = allStocks.find(s => s.productId === product.id);
     const crossdockingStock = stock?.crossdockingStock || 0;
-    const totalStock = crossdockingStock + (allMarketplaceStocks
+    const fullStocks = allMarketplaceStocks
       .filter(ms => ms.productId === product.id)
-      .reduce((sum, ms) => sum + ms.stock, 0) || 0);
+      .reduce((sum, ms) => sum + (ms.stock || 0), 0);
+    const totalStock = fullStocks + crossdockingStock;
     
     // Calculate stock coverage
     const daysOfStockAvailable = avgSalesPerDay > 0 ? Math.round(totalStock / avgSalesPerDay) : 0;

@@ -336,3 +336,10 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Identificar por que a função de importação não está atualizando os dados
 - [x] Corrigir lógica de atualização de estoque
 - [x] Testar atualização com nova planilha
+
+
+## Bug - Estoque Incorreto na Tela Geral
+
+- [x] Corrigir exibição de estoque na tela geral - deve mostrar soma de TODOS os estoques (FULL + CROSS)
+- [x] Verificar função getProductSalesWithChannelsByPeriod que busca estoque
+- [x] Testar exibição em múltiplos produtos
