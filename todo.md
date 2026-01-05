@@ -338,8 +338,10 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Testar atualização com nova planilha
 
 
-## Bug - Estoque Incorreto na Tela Geral
-
+### Bug - Estoque Incorreto na Tela Geral (CORRIGIDO)
 - [x] Corrigir exibição de estoque na tela geral - deve mostrar soma de TODOS os estoques (FULL + CROSS)
 - [x] Verificar função getProductSalesWithChannelsByPeriod que busca estoque
 - [x] Testar exibição em múltiplos produtos
+- [x] Substituir uso de marketplaceStock (vendas) por productChannelStockTypes (estoque)
+- [x] Validar cálculo: soma de todos fullStock + crossStock
+- [x] Testar em BL001: 60 FULL + 540 CROSS = 600 ✅

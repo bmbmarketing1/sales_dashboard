@@ -407,7 +407,7 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
   
   // Get all stock info
   const allStocks = await db.select().from(productStock);
-  const allMarketplaceStocks = await db.select().from(marketplaceStock);
+  const allChannelStocks = await db.select().from(productChannelStockTypes);
   
   const products = allProducts.map(product => {
     const channelSales = allChannels.map(channel => {
@@ -440,9 +440,9 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     // Get stock info - sum all FULL stocks from all channels + CROSS stock
     const stock = allStocks.find(s => s.productId === product.id);
     const crossdockingStock = stock?.crossdockingStock || 0;
-    const fullStocks = allMarketplaceStocks
-      .filter(ms => ms.productId === product.id)
-      .reduce((sum, ms) => sum + (ms.stock || 0), 0);
+    const fullStocks = allChannelStocks
+      .filter(cs => cs.productId === product.id)
+      .reduce((sum, cs) => sum + (cs.fullStock || 0), 0);
     const totalStock = fullStocks + crossdockingStock;
     
     // Calculate stock metrics
@@ -459,10 +459,10 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
     }
     
     // Calculate marketplace distribution
-    const productMarketplaceStocks = allMarketplaceStocks.filter(ms => ms.productId === product.id);
+    const productChannelStocks = allChannelStocks.filter(cs => cs.productId === product.id);
     const marketplaceDistribution = allChannels.map(channel => {
-      const channelStock = productMarketplaceStocks.find(ms => ms.channelId === channel.id);
-      const stock = channelStock?.stock || 0;
+      const channelStock = productChannelStocks.find(cs => cs.channelId === channel.id);
+      const stock = channelStock?.fullStock || 0;
       const percentage = totalStock > 0 ? Math.round((stock / totalStock) * 100) : 0;
       return {
         channelId: channel.id,
@@ -1124,7 +1124,7 @@ export async function getAllProductsWithStock(startDate: string, endDate: string
   
   // Get all stock info
   const allStocks = await db.select().from(productStock);
-  const allMarketplaceStocks = await db.select().from(marketplaceStock);
+  const allChannelStocks = await db.select().from(productChannelStockTypes);
   
   const products = allProducts.map(product => {
     // Get sales data
@@ -1146,9 +1146,9 @@ export async function getAllProductsWithStock(startDate: string, endDate: string
     // Get stock info - sum all FULL stocks from all channels + CROSS stock
     const stock = allStocks.find(s => s.productId === product.id);
     const crossdockingStock = stock?.crossdockingStock || 0;
-    const fullStocks = allMarketplaceStocks
-      .filter(ms => ms.productId === product.id)
-      .reduce((sum, ms) => sum + (ms.stock || 0), 0);
+    const fullStocks = allChannelStocks
+      .filter(cs => cs.productId === product.id)
+      .reduce((sum, cs) => sum + (cs.fullStock || 0), 0);
     const totalStock = fullStocks + crossdockingStock;
     
     // Calculate stock coverage
