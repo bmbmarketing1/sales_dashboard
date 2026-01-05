@@ -14,7 +14,8 @@ import {
   Target,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  Boxes
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -306,7 +307,7 @@ export default function ProductDetail() {
         </div>
         
         {/* Summary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -378,6 +379,24 @@ export default function ProductDetail() {
               </div>
             </CardContent>
           </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Estoque CROSS</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    {channelSummary && channelSummary.length > 0 
+                      ? channelSummary[0]?.crossStock || 0
+                      : 0
+                    }
+                  </p>
+                  <p className="text-xs text-gray-400">Compartilhado</p>
+                </div>
+                <Boxes className="w-10 h-10 text-orange-500" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
         
         {/* Marketplace thermometers */}
@@ -408,6 +427,10 @@ export default function ProductDetail() {
                       />
                       <p className="mt-2 text-lg font-bold">{channel.totalSales}</p>
                       <p className="text-xs text-gray-500">Meta: {totalGoal}</p>
+                      <div className="mt-3 pt-3 border-t border-gray-300 w-full text-center">
+                        <p className="text-xs text-gray-500">Estoque FULL</p>
+                        <p className="text-sm font-semibold text-gray-700">{channel.fullStock}</p>
+                      </div>
                     </div>
                   );
                 })}

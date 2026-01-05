@@ -934,6 +934,7 @@ export async function getProductChannelSummary(productId: number, startDate: str
   
   const allChannels = await getAllChannels();
   const goals = await getAllProductChannelGoals();
+  const allStocks = await db.select().from(productChannelStockTypes);
   
   // Get total sales per channel for this product in the date range
   const result = await db.select({
@@ -948,6 +949,7 @@ export async function getProductChannelSummary(productId: number, startDate: str
   return allChannels.map(channel => {
     const channelData = result.find(r => r.channelId === channel.id);
     const goal = goals.find(g => g.productId === productId && g.channelId === channel.id);
+    const stock = allStocks.find(s => s.productId === productId && s.channelId === channel.id);
     
     return {
       channelId: channel.id,
@@ -955,6 +957,8 @@ export async function getProductChannelSummary(productId: number, startDate: str
       totalSales: channelData?.totalQuantity || 0,
       daysWithSales: channelData?.daysWithSales || 0,
       dailyGoal: goal?.dailyGoal || 0,
+      fullStock: stock?.fullStock || 0,
+      crossStock: stock?.crossStock || 0,
     };
   });
 }

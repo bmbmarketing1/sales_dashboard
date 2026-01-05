@@ -347,3 +347,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Remover uso de product_stock.crossdockingStock (tabela obsoleta com valor errado)
 - [x] Usar apenas crossStock da tabela productChannelStockTypes
 - [x] Testar em BL001: 60 FULL + 500 CROSS = 560 ✅ (CORRETO!)
+
+
+## Página de Detalhes do Produto - Estoque (CONCLUÍDO ✅)
+
+- [x] Adicionar card grande de Estoque CROSS na seção superior (ao lado de "Dias na Meta")
+- [x] Exibir valor total de CROSS com indicador visual (ícone Boxes em laranja)
+- [x] Adicionar linha de estoque FULL abaixo de cada marketplace em "Desempenho por Marketplace"
+- [x] Mostrar "Estoque FULL: X" para cada marketplace com separador visual
+- [x] Testar em múltiplos produtos (BL001 validado: Amazon 12, Magalu 60, etc)
