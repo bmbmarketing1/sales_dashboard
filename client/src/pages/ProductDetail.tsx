@@ -36,6 +36,12 @@ export default function ProductDetail() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   
+  // Product editing state
+  const [isEditingProduct, setIsEditingProduct] = useState(false);
+  const [editedDescription, setEditedDescription] = useState("");
+  const [editedCategory, setEditedCategory] = useState("");
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+  
   // Calculate date range based on period
   const { startDate, endDate } = useMemo(() => {
     const today = new Date();
@@ -96,6 +102,9 @@ export default function ProductDetail() {
   // Mutation to save notes
   const updateNotesMutation = trpc.products.updateNotes.useMutation();
   
+  // Mutation to update product info
+  const updateProductMutation = trpc.products.updateInfo.useMutation();
+  
   // Load notes when product changes
   useEffect(() => {
     if (product?.notes) {
@@ -104,6 +113,14 @@ export default function ProductDetail() {
       setNotesText("");
     }
   }, [product?.id]);
+  
+  // Load product info when product changes
+  useEffect(() => {
+    if (product) {
+      setEditedDescription(product.description || "");
+      setEditedCategory(product.category || "");
+    }
+  }, [product?.id])
   
   const handleSaveNotes = async () => {
     if (!product) return;
@@ -127,6 +144,32 @@ export default function ProductDetail() {
       setNotesText(product.notes);
     } else {
       setNotesText("");
+    }
+  };
+  
+  const handleSaveProduct = async () => {
+    if (!product) return;
+    setIsSavingProduct(true);
+    try {
+      await updateProductMutation.mutateAsync({
+        productId: product.id,
+        description: editedDescription,
+        category: editedCategory,
+      });
+      await trpc.useUtils().products.byId.invalidate({ productId: product.id });
+      setIsEditingProduct(false);
+    } catch (error) {
+      console.error("Erro ao salvar produto:", error);
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditingProduct(false);
+    if (product) {
+      setEditedDescription(product.description || "");
+      setEditedCategory(product.category || "");
     }
   };
   
@@ -246,11 +289,68 @@ export default function ProductDetail() {
                 <Package className="w-8 h-8 text-gray-400" />
               </div>
             )}
-            <div>
-              <p className="text-sm text-gray-500">{product.internalCode}</p>
-              <h1 className="text-xl font-bold text-gray-800">{product.description}</h1>
-              {product.category && (
-                <p className="text-xs text-blue-600">{product.category}</p>
+            <div className="flex-1">
+              {isEditingProduct ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={editedDescription}
+                    onChange={(e) => setEditedDescription(e.target.value)}
+                    placeholder="Título do produto"
+                    className="w-full px-2 py-1 border rounded text-lg font-bold"
+                  />
+                  <input
+                    type="text"
+                    value={editedCategory}
+                    onChange={(e) => setEditedCategory(e.target.value)}
+                    placeholder="Categoria"
+                    className="w-full px-2 py-1 border rounded text-xs"
+                  />
+                  <p className="text-sm text-gray-500">{product.internalCode}</p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-gray-500">{product.internalCode}</p>
+                  <h1 className="text-xl font-bold text-gray-800">{product.description}</h1>
+                  {product.category && (
+                    <p className="text-xs text-blue-600">{product.category}</p>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {isEditingProduct ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveProduct}
+                    disabled={isSavingProduct}
+                  >
+                    {isSavingProduct ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      "Salvar"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditingProduct(true)}
+                >
+                  Editar
+                </Button>
               )}
             </div>
           </div>
