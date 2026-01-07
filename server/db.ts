@@ -265,6 +265,12 @@ export async function updateProductGoal(productId: number, dailyGoal: number): P
   await db.update(products).set({ dailyGoal }).where(eq(products.id, productId));
 }
 
+export async function updateProductNotes(productId: number, notes: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(products).set({ notes }).where(eq(products.id, productId));
+}
+
 export async function updateChannelGoal(channelId: number, dailyGoal: number): Promise<void> {
   const db = await getDb();
   if (!db) return;

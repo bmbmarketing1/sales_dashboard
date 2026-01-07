@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,9 @@ export default function ProductDetail() {
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const [startPickerOpen, setStartPickerOpen] = useState(false);
   const [endPickerOpen, setEndPickerOpen] = useState(false);
+  const [notesText, setNotesText] = useState("");
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   
   // Calculate date range based on period
   const { startDate, endDate } = useMemo(() => {
@@ -89,6 +92,43 @@ export default function ProductDetail() {
   );
   
   const isLoading = productLoading || historyLoading || summaryLoading;
+  
+  // Mutation to save notes
+  const updateNotesMutation = trpc.products.updateNotes.useMutation();
+  
+  // Load notes when product changes
+  useEffect(() => {
+    if (product?.notes) {
+      setNotesText(product.notes);
+    } else {
+      setNotesText("");
+    }
+  }, [product?.id]);
+  
+  const handleSaveNotes = async () => {
+    if (!product) return;
+    setIsSavingNotes(true);
+    try {
+      await updateNotesMutation.mutateAsync({
+        productId: product.id,
+        notes: notesText,
+      });
+      setIsEditingNotes(false);
+    } catch (error) {
+      console.error("Erro ao salvar notas:", error);
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+  
+  const handleCancelNotes = () => {
+    setIsEditingNotes(false);
+    if (product?.notes) {
+      setNotesText(product.notes);
+    } else {
+      setNotesText("");
+    }
+  };
   
   // Calculate statistics
   const stats = useMemo(() => {
@@ -511,6 +551,54 @@ export default function ProductDetail() {
             ) : (
               <div className="py-12 text-center text-gray-500">
                 Nenhum dado disponível para o período selecionado
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        {/* Notes section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Notas do Anúncio</CardTitle>
+            {!isEditingNotes && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingNotes(true)}
+              >
+                Editar
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {isEditingNotes ? (
+              <div className="space-y-4">
+                <textarea
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  placeholder="Adicione observações sobre o anúncio..."
+                  className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  maxLength={5000}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelNotes}
+                    disabled={isSavingNotes}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSaveNotes}
+                    disabled={isSavingNotes}
+                  >
+                    {isSavingNotes ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-700 whitespace-pre-wrap">
+                {notesText || <span className="text-gray-400 italic">Nenhuma nota adicionada</span>}
               </div>
             )}
           </CardContent>

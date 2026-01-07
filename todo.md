@@ -356,3 +356,14 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Adicionar linha de estoque FULL abaixo de cada marketplace em "Desempenho por Marketplace"
 - [x] Mostrar "Estoque FULL: X" para cada marketplace com separador visual
 - [x] Testar em múltiplos produtos (BL001 validado: Amazon 12, Magalu 60, etc)
+
+
+## Campo de Notas por Produto (CONCLUÍDO ✅)
+
+- [x] Adicionar coluna "notes" na tabela products
+- [x] Criar mutation tRPC para salvar notas (products.updateNotes)
+- [x] Criar query tRPC para recuperar notas (carregadas via products.byId)
+- [x] Implementar UI de notas na página de detalhes (textarea editável)
+- [x] Adicionar botão de salvar/cancelar
+- [x] Testar em múltiplos produtos (BL001 validado com sucesso)
+- [x] Salvar e recuperar notas funcionando corretamente

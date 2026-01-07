@@ -13,6 +13,7 @@ import {
   getAllProducts,
   getAllChannels,
   updateProductGoal,
+  updateProductNotes,
   updateChannelGoal,
   upsertProductChannelGoal,
   getAllProductChannelGoals,
@@ -399,6 +400,16 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         await updateProductGoal(input.productId, input.dailyGoal);
+        return { success: true };
+      }),
+    
+    updateNotes: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+        notes: z.string().max(5000),
+      }))
+      .mutation(async ({ input }) => {
+        await updateProductNotes(input.productId, input.notes);
         return { success: true };
       }),
   }),
