@@ -367,3 +367,14 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Adicionar botão de salvar/cancelar
 - [x] Testar em múltiplos produtos (BL001 validado com sucesso)
 - [x] Salvar e recuperar notas funcionando corretamente
+
+
+## Notas por Marketplace na Tela de Visualização (CONCLUÍDO ✅)
+
+- [x] Adicionar tabela "product_marketplace_notes" com colunas: productId, channelId, notes
+- [x] Criar mutation tRPC products.updateMarketplaceNote para salvar notas por marketplace
+- [x] Criar query tRPC products.getMarketplaceNote para recuperar notas por marketplace
+- [x] Adicionar botão "Notas" na tabela de produtos da página de marketplace
+- [x] Implementar modal para editar notas por marketplace
+- [x] Adicionar textarea editável com botões Salvar/Cancelar
+- [x] Testar em Amazon: nota salva e recuperada com sucesso (BL001)

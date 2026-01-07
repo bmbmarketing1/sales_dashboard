@@ -170,3 +170,20 @@ export const productListingLinks = mysqlTable("product_listing_links", {
 
 export type ProductListingLink = typeof productListingLinks.$inferSelect;
 export type InsertProductListingLink = typeof productListingLinks.$inferInsert;
+
+/**
+ * Product-Channel notes - specific notes for each product in each channel/marketplace
+ */
+export const productMarketplaceNotes = mysqlTable("product_marketplace_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  channelId: int("channelId").notNull(),
+  notes: text("notes"), // Notas específicas do marketplace
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  productChannelUnique: unique().on(table.productId, table.channelId),
+}));
+
+export type ProductMarketplaceNote = typeof productMarketplaceNotes.$inferSelect;
+export type InsertProductMarketplaceNote = typeof productMarketplaceNotes.$inferInsert;

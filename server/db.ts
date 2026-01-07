@@ -11,7 +11,8 @@ import {
   productStock, InsertProductStock, ProductStock,
   marketplaceStock, InsertMarketplaceStock, MarketplaceStock,
   productListingLinks, InsertProductListingLink, ProductListingLink,
-  productChannelStockTypes, InsertProductChannelStockType, ProductChannelStockType
+  productChannelStockTypes, InsertProductChannelStockType, ProductChannelStockType,
+  productMarketplaceNotes, InsertProductMarketplaceNote, ProductMarketplaceNote
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -275,6 +276,51 @@ export async function updateChannelGoal(channelId: number, dailyGoal: number): P
   const db = await getDb();
   if (!db) return;
   await db.update(channels).set({ dailyGoal }).where(eq(channels.id, channelId));
+}
+
+// ============ PRODUCT-MARKETPLACE NOTES ============
+
+export async function getProductMarketplaceNote(productId: number, channelId: number): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select()
+    .from(productMarketplaceNotes)
+    .where(and(
+      eq(productMarketplaceNotes.productId, productId),
+      eq(productMarketplaceNotes.channelId, channelId)
+    ))
+    .limit(1);
+  
+  return result[0]?.notes || null;
+}
+
+export async function upsertProductMarketplaceNote(productId: number, channelId: number, notes: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  
+  const existing = await db.select()
+    .from(productMarketplaceNotes)
+    .where(and(
+      eq(productMarketplaceNotes.productId, productId),
+      eq(productMarketplaceNotes.channelId, channelId)
+    ))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(productMarketplaceNotes)
+      .set({ notes })
+      .where(and(
+        eq(productMarketplaceNotes.productId, productId),
+        eq(productMarketplaceNotes.channelId, channelId)
+      ));
+  } else {
+    await db.insert(productMarketplaceNotes).values({
+      productId,
+      channelId,
+      notes,
+    });
+  }
 }
 
 // ============ PRODUCT-CHANNEL GOALS ============

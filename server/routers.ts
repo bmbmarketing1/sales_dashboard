@@ -14,6 +14,8 @@ import {
   getAllChannels,
   updateProductGoal,
   updateProductNotes,
+  getProductMarketplaceNote,
+  upsertProductMarketplaceNote,
   updateChannelGoal,
   upsertProductChannelGoal,
   getAllProductChannelGoals,
@@ -412,6 +414,26 @@ export const appRouter = router({
         await updateProductNotes(input.productId, input.notes);
         return { success: true };
       }),
+    
+    getMarketplaceNote: publicProcedure
+      .input(z.object({
+        productId: z.number(),
+        channelId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return await getProductMarketplaceNote(input.productId, input.channelId);
+      }),
+    
+    updateMarketplaceNote: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+        channelId: z.number(),
+        notes: z.string().max(5000),
+      }))
+      .mutation(async ({ input }) => {
+        await upsertProductMarketplaceNote(input.productId, input.channelId, input.notes);
+        return { success: true };
+      })
   }),
 
   // Channels management

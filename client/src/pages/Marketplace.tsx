@@ -73,6 +73,12 @@ export default function Marketplace() {
   // Links view state
   const [expandedLinksProductId, setExpandedLinksProductId] = useState<number | null>(null);
   
+  // Marketplace notes state
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [selectedProductForNotes, setSelectedProductForNotes] = useState<{ id: number; code: string; name: string } | null>(null);
+  const [notesText, setNotesText] = useState("");
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  
   const today = new Date();
   
   // Calculate date range based on period
@@ -132,6 +138,41 @@ export default function Marketplace() {
     { productId: selectedProductId || 0, channelId, days: 30 },
     { enabled: historyModalOpen && selectedProductId !== null }
   );
+  
+  // Fetch marketplace notes
+  const { data: currentNote } = trpc.products.getMarketplaceNote.useQuery(
+    { productId: selectedProductForNotes?.id || 0, channelId },
+    { enabled: notesModalOpen && selectedProductForNotes !== null }
+  );
+  
+  // Update marketplace notes mutation
+  const updateNoteMutation = trpc.products.updateMarketplaceNote.useMutation({
+    onSuccess: () => {
+      setNotesModalOpen(false);
+      setNotesText("");
+      setSelectedProductForNotes(null);
+    },
+  });
+  
+  const handleOpenNotesModal = (productId: number, code: string, name: string) => {
+    setSelectedProductForNotes({ id: productId, code, name });
+    setNotesText(currentNote || "");
+    setNotesModalOpen(true);
+  };
+  
+  const handleSaveNotes = async () => {
+    if (!selectedProductForNotes) return;
+    setIsSavingNotes(true);
+    try {
+      await updateNoteMutation.mutateAsync({
+        productId: selectedProductForNotes.id,
+        channelId,
+        notes: notesText,
+      });
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }
   
   const handleCustomDateSelect = (type: "start" | "end", date: Date | undefined) => {
     if (type === "start") {
@@ -515,6 +556,15 @@ export default function Marketplace() {
                       <Button 
                         variant="outline" 
                         size="sm"
+                        onClick={() => handleOpenNotesModal(product.id, product.internalCode, product.description)}
+                        className="gap-2"
+                      >
+                        <Package className="w-4 h-4" />
+                        Notas
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
                         onClick={() => setExpandedLinksProductId(expandedLinksProductId === product.id ? null : product.id)}
                         className="gap-2"
                       >
@@ -637,6 +687,46 @@ export default function Marketplace() {
           ) : (
             <p className="text-center text-gray-500 py-8">Nenhum dado disponível</p>
           )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Marketplace Notes Modal */}
+      <Dialog open={notesModalOpen} onOpenChange={setNotesModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              Notas - {selectedProductForNotes?.code} ({selectedProductForNotes?.name})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <textarea
+              value={notesText}
+              onChange={(e) => setNotesText(e.target.value)}
+              placeholder="Adicione observações específicas deste marketplace..."
+              className="w-full h-32 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setNotesModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveNotes}
+                disabled={isSavingNotes}
+              >
+                {isSavingNotes ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Salvar"
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
