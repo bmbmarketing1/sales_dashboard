@@ -14,6 +14,7 @@ import {
   getAllChannels,
   updateProductGoal,
   updateProductNotes,
+  updateProductInfo,
   getProductMarketplaceNote,
   upsertProductMarketplaceNote,
   updateChannelGoal,
@@ -432,6 +433,22 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         await upsertProductMarketplaceNote(input.productId, input.channelId, input.notes);
+        return { success: true };
+      })
+    ,
+    updateInfo: protectedProcedure
+      .input(z.object({
+        productId: z.number(),
+        description: z.string().max(255).optional(),
+        internalCode: z.string().max(50).optional(),
+        category: z.string().max(100).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await updateProductInfo(input.productId, {
+          description: input.description,
+          internalCode: input.internalCode,
+          category: input.category,
+        });
         return { success: true };
       })
   }),

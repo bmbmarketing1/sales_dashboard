@@ -378,3 +378,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Implementar modal para editar notas por marketplace
 - [x] Adicionar textarea editável com botões Salvar/Cancelar
 - [x] Testar em Amazon: nota salva e recuperada com sucesso (BL001)
+
+
+## Edicao de Produtos (CONCLUIDO)
+
+- [x] Tornar codigo interno editavel (campo de input adicionado)
+- [x] Substituir input de categoria por dropdown com categorias cadastradas
+- [x] Corrigir erro de Hook na funcao handleSaveProduct
+- [x] Testar edicao completa: BL001-TESTE salvo com sucesso
+- [x] Validar persistencia de dados no banco de dados
