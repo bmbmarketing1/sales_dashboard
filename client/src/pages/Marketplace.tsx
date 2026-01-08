@@ -520,15 +520,13 @@ export default function Marketplace() {
                       
                       <StockDisplay productId={product.id} channelId={channelId} />
                       
-                      {product.fullStock !== undefined && product.averageDailySales !== undefined && (
-                        <ProductInsightBadge
-                          totalQuantity={product.totalSales}
-                          expectedQuantity={product.periodGoal}
-                          totalStock={product.fullStock || 0}
-                          dailyAverage={product.averageDailySales || 0}
-                          daysInPeriod={daysInPeriod}
-                        />
-                      )}
+                      <ProductInsightBadge
+                        totalQuantity={product.totalSales}
+                        expectedQuantity={product.periodGoal}
+                        totalStock={product.fullStock || 0}
+                        dailyAverage={product.averageDailySales || 0}
+                        daysInPeriod={daysInPeriod}
+                      />
                       
                       <div className="text-right">
                         <div className={cn(
