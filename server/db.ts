@@ -1673,12 +1673,18 @@ export async function getMarketplaceInsights(
   channelId: number,
   startDate: string,
   endDate: string,
-  periodDays: number
+  periodDays: number,
+  category?: string
 ): Promise<MarketplaceInsights> {
   const db = await getDb();
   if (!db) return { meetsGoal: [], belowGoal: [], urgentRestock: [] };
 
   // Get all products with sales data for the period
+  const conditions = [];
+  if (category && category !== 'all') {
+    conditions.push(eq(products.category, category));
+  }
+
   const result = await db
     .select({
       id: products.id,
@@ -1704,6 +1710,7 @@ export async function getMarketplaceInsights(
         eq(productChannelGoals.channelId, channelId)
       )
     )
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .groupBy(products.id, products.internalCode, products.description, productChannelGoals.dailyGoal);
 
   // Get stock data for all products

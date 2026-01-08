@@ -453,3 +453,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
   - [x] Validar cálculos de percentual
   - [x] Verificar alertas de reabastecimento
   - [x] Testar em diferentes períodos (7d, 15d, 30d, custom)
+
+
+## Filtro de Categoria nos Insights - CONCLUÍDO ✅
+
+- [x] Atualizar função getMarketplaceInsights para aceitar parâmetro de categoria
+- [x] Modificar rota tRPC insights.byMarketplace para passar categoria
+- [x] Atualizar componente MarketplaceInsightsPanel para receber categoria
+- [x] Integrar filtro de categoria existente com insights
+- [x] Testar filtro em diferentes categorias

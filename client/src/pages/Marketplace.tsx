@@ -144,7 +144,7 @@ export default function Marketplace() {
   
   // Fetch marketplace insights
   const { data: insights, isLoading: insightsLoading } = trpc.insights.byMarketplace.useQuery(
-    { channelId, startDate, endDate, periodDays: daysInPeriod },
+    { channelId, startDate, endDate, periodDays: daysInPeriod, category: selectedCategory !== 'all' ? selectedCategory : undefined },
     { enabled: isAuthenticated && channelId > 0 }
   );
   
