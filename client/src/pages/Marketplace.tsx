@@ -12,6 +12,7 @@ import { ProductListingLinks } from "@/components/ProductListingLinks";
 import { StockDisplay } from "@/components/StockDisplay";
 import { StockCoverageAlert } from "@/components/StockCoverageAlert";
 import { ProductInsightBadge } from "@/components/ProductInsightBadge";
+import { MarketplaceInsightsPanel } from "@/components/MarketplaceInsightsPanel";
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,7 @@ export default function Marketplace() {
   
   // Links view state
   const [expandedLinksProductId, setExpandedLinksProductId] = useState<number | null>(null);
+  const [showInsights, setShowInsights] = useState(true);
   
   // Marketplace notes state
   const [notesModalOpen, setNotesModalOpen] = useState(false);
@@ -138,6 +140,12 @@ export default function Marketplace() {
   const { data: productHistory, isLoading: historyLoading } = trpc.marketplace.productHistory.useQuery(
     { productId: selectedProductId || 0, channelId, days: 30 },
     { enabled: historyModalOpen && selectedProductId !== null }
+  );
+  
+  // Fetch marketplace insights
+  const { data: insights, isLoading: insightsLoading } = trpc.insights.byMarketplace.useQuery(
+    { channelId, startDate, endDate, periodDays: daysInPeriod },
+    { enabled: isAuthenticated && channelId > 0 }
   );
   
   // Fetch marketplace notes
@@ -467,6 +475,29 @@ export default function Marketplace() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Insights Panel */}
+        {insights && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Insights de Performance</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowInsights(!showInsights)}
+              >
+                {showInsights ? "Ocultar" : "Mostrar"}
+              </Button>
+            </div>
+            {showInsights && (
+              <MarketplaceInsightsPanel
+                meetsGoal={insights.meetsGoal}
+                belowGoal={insights.belowGoal}
+                urgentRestock={insights.urgentRestock}
+              />
+            )}
+          </div>
+        )}
         
         {/* Products list */}
         {isLoading ? (

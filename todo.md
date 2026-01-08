@@ -430,3 +430,26 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [ ] Incluir imagem/visual atrativo no relatorio
 - [ ] Adicionar botao de exportacao na pagina de marketplace
 - [ ] Testar geracao e download do relatorio
+
+
+### Insights Inteligentes por Marketplace - CONCLUÍDO ✅
+- [x] Implementar API backend para calcular insights por marketplace
+  - [x] Função para agrupar produtos em "Batendo Meta" e "Abaixo da Meta"
+  - [x] Função para identificar produtos com reabastecimento urgente (estoque crítico)
+  - [x] Cálculo de percentual de atingimento para cada produto
+  
+- [x] Criar componentes de UI para exibir insights
+  - [x] Componente MarketplaceInsightsPanel com seções expandíveis
+  - [x] Card de resumo: "Batendo Meta (X)" e "Abaixo da Meta (Y)"
+  - [x] Lista de produtos com barra de progresso (%)
+  - [x] Indicador de reabastecimento urgente (estoque < 30 dias)
+  
+- [x] Integrar insights na página de marketplace
+  - [x] Adicionar seção de insights no topo da página
+  - [x] Filtrar produtos por marketplace selecionado
+  - [x] Atualizar insights conforme período selecionado
+  
+- [x] Testar insights em todos os marketplaces
+  - [x] Validar cálculos de percentual
+  - [x] Verificar alertas de reabastecimento
+  - [x] Testar em diferentes períodos (7d, 15d, 30d, custom)

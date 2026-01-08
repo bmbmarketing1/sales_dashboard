@@ -1645,3 +1645,118 @@ export async function getProductsWithoutCategoryWithSales(startDate: string, end
   
   return result.sort((a, b) => b.quantity - a.quantity);
 }
+
+
+// ============ MARKETPLACE INSIGHTS ============
+
+export interface ProductInsight {
+  id: number;
+  reference: string;
+  name: string;
+  totalSales: number;
+  periodGoal: number;
+  percentageAchieved: number;
+  fullStock: number;
+  crossStock: number;
+  averageDailySales: number;
+  daysOfStockRemaining: number;
+  isUrgentRestock: boolean;
+}
+
+export interface MarketplaceInsights {
+  meetsGoal: ProductInsight[];
+  belowGoal: ProductInsight[];
+  urgentRestock: ProductInsight[];
+}
+
+export async function getMarketplaceInsights(
+  channelId: number,
+  startDate: string,
+  endDate: string,
+  periodDays: number
+): Promise<MarketplaceInsights> {
+  const db = await getDb();
+  if (!db) return { meetsGoal: [], belowGoal: [], urgentRestock: [] };
+
+  // Get all products with sales data for the period
+  const result = await db
+    .select({
+      id: products.id,
+      internalCode: products.internalCode,
+      description: products.description,
+      totalSales: sql<number>`COALESCE(SUM(${dailySales.quantity}), 0)`,
+      totalRevenue: sql<number>`COALESCE(SUM(${dailySales.revenue}), 0)`,
+      channelGoal: productChannelGoals.dailyGoal,
+    })
+    .from(products)
+    .leftJoin(
+      dailySales,
+      and(
+        eq(products.id, dailySales.productId),
+        eq(dailySales.channelId, channelId),
+        sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`
+      )
+    )
+    .leftJoin(
+      productChannelGoals,
+      and(
+        eq(products.id, productChannelGoals.productId),
+        eq(productChannelGoals.channelId, channelId)
+      )
+    )
+    .groupBy(products.id, products.internalCode, products.description, productChannelGoals.dailyGoal);
+
+  // Get stock data for all products
+  const stockData = await db
+    .select({
+      productId: productChannelStockTypes.productId,
+      fullStock: productChannelStockTypes.fullStock,
+      crossStock: productChannelStockTypes.crossStock,
+    })
+    .from(productChannelStockTypes)
+    .where(eq(productChannelStockTypes.channelId, channelId));
+
+  const stockMap = new Map(stockData.map(s => [s.productId, s]));
+
+  // Process and categorize products
+  const insights: ProductInsight[] = result.map(row => {
+    const totalSales = row.totalSales || 0;
+    const periodGoal = (row.channelGoal || 0) * periodDays;
+    const percentageAchieved = periodGoal > 0 ? (totalSales / periodGoal) * 100 : 0;
+    const averageDailySales = periodDays > 0 ? totalSales / periodDays : 0;
+    
+    const stock = stockMap.get(row.id);
+    const fullStock = stock?.fullStock || 0;
+    const crossStock = stock?.crossStock || 0;
+    const totalStock = fullStock + crossStock;
+    
+    const daysOfStockRemaining = averageDailySales > 0 
+      ? Math.floor(totalStock / averageDailySales) 
+      : totalStock > 0 ? 999 : 0;
+
+    return {
+      id: row.id,
+      reference: row.internalCode,
+      name: row.description,
+      totalSales,
+      periodGoal,
+      percentageAchieved: Math.round(percentageAchieved),
+      fullStock,
+      crossStock,
+      averageDailySales: Math.round(averageDailySales * 10) / 10,
+      daysOfStockRemaining,
+      isUrgentRestock: daysOfStockRemaining < 30 && averageDailySales > 0,
+    };
+  });
+
+  // Categorize products
+  const meetsGoal = insights.filter(p => p.percentageAchieved >= 100);
+  const belowGoal = insights.filter(p => p.percentageAchieved < 100);
+  const urgentRestock = insights.filter(p => p.isUrgentRestock);
+
+  return {
+    meetsGoal: meetsGoal.sort((a, b) => b.percentageAchieved - a.percentageAchieved),
+    belowGoal: belowGoal.sort((a, b) => b.percentageAchieved - a.percentageAchieved),
+    urgentRestock: urgentRestock.sort((a, b) => a.daysOfStockRemaining - b.daysOfStockRemaining),
+  };
+}

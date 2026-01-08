@@ -50,6 +50,7 @@ import {
   getRevenueByCategory,
   generateSalesReport,
   getProductsWithoutCategoryWithSales,
+  getMarketplaceInsights,
 } from "./db";
 
 export const appRouter = router({
@@ -317,6 +318,22 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return getProductsInsights(input.startDate, input.endDate);
       }),
+    
+    byMarketplace: publicProcedure
+      .input(z.object({
+        channelId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+        periodDays: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return getMarketplaceInsights(
+          input.channelId,
+          input.startDate,
+          input.endDate,
+          input.periodDays
+        );
+      }),
   }),
 
   // Marketplace view - sales by channel
@@ -451,8 +468,7 @@ export const appRouter = router({
           category: input.category,
         });
         return { success: true };
-      })
-    ,
+      }),
     withoutCategory: publicProcedure
       .input(z.object({
         startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -460,7 +476,7 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return getProductsWithoutCategoryWithSales(input.startDate, input.endDate);
-      })
+      }),
   }),
 
   // Channels management
@@ -743,6 +759,8 @@ export const appRouter = router({
           return { success: true };
         }),
   }),
+
+
 });
 
 export type AppRouter = typeof appRouter;
