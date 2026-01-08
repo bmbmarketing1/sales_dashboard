@@ -396,3 +396,37 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Adicionar funcionalidade de categorização em massa (select + dropdown)
 - [x] Adicionar botão de acesso rápido no dashboard
 - [ ] Testar listagem e categorização
+
+
+## Insights de Estoque vs Meta
+
+- [ ] Criar funcao para calcular se estoque eh suficiente para bater meta
+- [ ] Criar funcao para verificar se produto esta acima da meta
+- [ ] Integrar insights na pagina de marketplace (tabela de produtos)
+- [ ] Adicionar indicadores visuais (badges/cores) para insights
+- [ ] Testar em multiplos produtos e marketplaces
+
+## Relatorio Exportavel com Imagem
+
+- [ ] Criar API para gerar relatorio em PDF
+- [ ] Adicionar informacoes: Faturamento, Quantidade, Meta, Media
+- [ ] Incluir imagem/visual atrativo no relatorio
+- [ ] Adicionar botao de exportacao na pagina de marketplace
+- [ ] Testar geracao e download do relatorio
+
+## Insights de Estoque vs Meta (EM PROGRESSO)
+
+- [x] Criar componente ProductInsightBadge para calcular insights
+- [x] Logica para verificar se estoque eh suficiente para bater meta
+- [x] Logica para verificar se produto esta acima da meta
+- [ ] Integrar insights na pagina de marketplace (tabela de produtos)
+- [ ] Adicionar indicadores visuais (badges/cores) para insights
+- [ ] Testar em multiplos produtos e marketplaces
+
+## Relatorio Exportavel com Imagem (PLANEJADO)
+
+- [ ] Criar API para gerar relatorio em PDF
+- [ ] Adicionar informacoes: Faturamento, Quantidade, Meta, Media
+- [ ] Incluir imagem/visual atrativo no relatorio
+- [ ] Adicionar botao de exportacao na pagina de marketplace
+- [ ] Testar geracao e download do relatorio
