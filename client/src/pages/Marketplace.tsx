@@ -11,6 +11,7 @@ import { Thermometer } from "@/components/Thermometer";
 import { ProductListingLinks } from "@/components/ProductListingLinks";
 import { StockDisplay } from "@/components/StockDisplay";
 import { StockCoverageAlert } from "@/components/StockCoverageAlert";
+import { ProductInsightBadge } from "@/components/ProductInsightBadge";
 import {
   Dialog,
   DialogContent,
@@ -520,10 +521,12 @@ export default function Marketplace() {
                       <StockDisplay productId={product.id} channelId={channelId} />
                       
                       {product.fullStock !== undefined && product.averageDailySales !== undefined && (
-                        <StockCoverageAlert
-                          fullStock={product.fullStock || 0}
-                          averageDailySales={product.averageDailySales || 0}
-                          size="sm"
+                        <ProductInsightBadge
+                          totalQuantity={product.totalSales}
+                          expectedQuantity={product.periodGoal}
+                          totalStock={product.fullStock || 0}
+                          dailyAverage={product.averageDailySales || 0}
+                          daysInPeriod={daysInPeriod}
                         />
                       )}
                       
