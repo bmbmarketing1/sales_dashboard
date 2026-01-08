@@ -49,6 +49,7 @@ import {
   getProductChannelStockTypes,
   getRevenueByCategory,
   generateSalesReport,
+  getProductsWithoutCategoryWithSales,
 } from "./db";
 
 export const appRouter = router({
@@ -450,6 +451,15 @@ export const appRouter = router({
           category: input.category,
         });
         return { success: true };
+      })
+    ,
+    withoutCategory: publicProcedure
+      .input(z.object({
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      }))
+      .query(async ({ input }) => {
+        return getProductsWithoutCategoryWithSales(input.startDate, input.endDate);
       })
   }),
 

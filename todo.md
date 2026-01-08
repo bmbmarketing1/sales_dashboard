@@ -387,3 +387,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Corrigir erro de Hook na funcao handleSaveProduct
 - [x] Testar edicao completa: BL001-TESTE salvo com sucesso
 - [x] Validar persistencia de dados no banco de dados
+
+
+## Listagem de Produtos Sem Categoria (CONCLUÍDO)
+
+- [x] Criar API para listar produtos sem categoria (products.withoutCategory)
+- [x] Implementar página de produtos sem categoria (/sem-categoria)
+- [x] Adicionar funcionalidade de categorização em massa (select + dropdown)
+- [x] Adicionar botão de acesso rápido no dashboard
+- [ ] Testar listagem e categorização

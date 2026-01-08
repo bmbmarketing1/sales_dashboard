@@ -9,6 +9,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Insights from "./pages/Insights";
 import Marketplace from "./pages/Marketplace";
 import StockAnalysis from "./pages/StockAnalysis";
+import UncategorizedProducts from "./pages/UncategorizedProducts";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -18,6 +19,7 @@ function Router() {
       <Route path={"/produto/:id"} component={ProductDetail} />
       <Route path={"/insights"} component={Insights} />
       <Route path={"/estoque"} component={StockAnalysis} />
+      <Route path={"/sem-categoria"} component={UncategorizedProducts} />
       <Route path={"/marketplace/:channelId"} component={Marketplace} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

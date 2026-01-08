@@ -605,7 +605,15 @@ export default function Dashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800">Faturamento por Linha de Produto</h2>
-            <ExportReportButton startDate={startDate} endDate={endDate} periodLabel={getPeriodLabel()} />
+            <div className="flex gap-2">
+              <Link href="/sem-categoria">
+                <Button variant="outline" size="sm">
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Produtos Sem Categoria
+                </Button>
+              </Link>
+              <ExportReportButton startDate={startDate} endDate={endDate} periodLabel={getPeriodLabel()} />
+            </div>
           </div>
           <RevenueByCategoryCards data={revenueByCategory || []} isLoading={revenueLoading} />
         </div>

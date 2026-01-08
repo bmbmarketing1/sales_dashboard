@@ -1,4 +1,4 @@
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { format } from "date-fns";
 import { 
@@ -1589,4 +1589,59 @@ export async function generateSalesReport(startDate: string, endDate: string) {
   });
   
   return reportData;
+}
+
+// ============ PRODUCTS WITHOUT CATEGORY ============
+
+export async function getProductsWithoutCategory() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select()
+    .from(products)
+    .where(sql`${products.category} IS NULL OR ${products.category} = ''`);
+  
+  return result;
+}
+
+export async function getProductsWithoutCategoryWithSales(startDate: string, endDate: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  // Get products without category
+  const productsWithoutCategory = await getProductsWithoutCategory();
+  const productIds = productsWithoutCategory.map(p => p.id);
+  
+  if (productIds.length === 0) return [];
+  
+  // Get sales for these products in the date range
+  const sales = await db.select()
+    .from(dailySales)
+    .where(
+      and(
+        inArray(dailySales.productId, productIds),
+        sql`${dailySales.saleDate} >= ${startDate} AND ${dailySales.saleDate} <= ${endDate}`
+      )
+    );
+  
+  // Aggregate sales by product
+  const salesMap = new Map<number, { quantity: number; revenue: number }>();
+  
+  sales.forEach(sale => {
+    if (!salesMap.has(sale.productId)) {
+      salesMap.set(sale.productId, { quantity: 0, revenue: 0 });
+    }
+    const current = salesMap.get(sale.productId)!;
+    current.quantity += sale.quantity;
+    current.revenue += sale.revenue || 0;
+  });
+  
+  // Combine products with sales data
+  const result = productsWithoutCategory.map(product => ({
+    ...product,
+    quantity: salesMap.get(product.id)?.quantity || 0,
+    revenue: salesMap.get(product.id)?.revenue || 0,
+  })).filter(p => p.quantity > 0); // Only show products with sales
+  
+  return result.sort((a, b) => b.quantity - a.quantity);
 }
