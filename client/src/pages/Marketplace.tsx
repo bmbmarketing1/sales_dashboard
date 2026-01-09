@@ -11,7 +11,8 @@ import { Thermometer } from "@/components/Thermometer";
 import { ProductListingLinks } from "@/components/ProductListingLinks";
 import { StockDisplay } from "@/components/StockDisplay";
 import { StockCoverageAlert } from "@/components/StockCoverageAlert";
-import { ProductInsightBadge } from "@/components/ProductInsightBadge";
+import { ProductInsightBadge } from '@/components/ProductInsightBadge';
+import { StockNecessityBadge } from '@/components/StockNecessityBadge';
 import { MarketplaceInsightsPanel } from "@/components/MarketplaceInsightsPanel";
 import {
   Dialog,
@@ -551,14 +552,6 @@ export default function Marketplace() {
                       
                       <StockDisplay productId={product.id} channelId={channelId} />
                       
-                      <ProductInsightBadge
-                        totalQuantity={product.totalSales}
-                        expectedQuantity={product.periodGoal}
-                        totalStock={product.fullStock || 0}
-                        dailyAverage={product.averageDailySales || 0}
-                        daysInPeriod={daysInPeriod}
-                      />
-                      
                       <div className="text-right">
                         <div className={cn(
                           "w-16 text-right font-bold",
@@ -605,6 +598,7 @@ export default function Marketplace() {
                       </Button>
                       </div>
                     </div>
+                    
                     
                     {/* Expanded links section */}
                     {expandedLinksProductId === product.id && (

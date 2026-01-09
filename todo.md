@@ -398,9 +398,9 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [ ] Testar listagem e categorização
 
 
-## Insights de Estoque vs Meta
+## Insights de Estoque vs Meta - CONCLUÍDO ✅
 
-- [ ] Criar funcao para calcular se estoque eh suficiente para bater meta
+- [x] Criar funcao para calcular se estoque eh suficiente para bater meta
 - [ ] Criar funcao para verificar se produto esta acima da meta
 - [ ] Integrar insights na pagina de marketplace (tabela de produtos)
 - [ ] Adicionar indicadores visuais (badges/cores) para insights
@@ -462,3 +462,34 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Atualizar componente MarketplaceInsightsPanel para receber categoria
 - [x] Integrar filtro de categoria existente com insights
 - [x] Testar filtro em diferentes categorias
+
+
+## Sistema Inteligente de Controle de Estoque - EM PROGRESSO
+
+### Lógica de Necessidade de Abastecimento
+- [x] Implementar cálculo: (META DIÁRIA × 30) - ESTOQUE FULL (Backend)
+- [x] Criar função para determinar se estoque é suficiente ou necessário
+- [x] Adicionar indicadores visuais (verde/amarelo/vermelho)
+
+### Na Linha do Produto (Marketplace)
+- [ ] Renderizar novo indicador de necessidade/suficiência
+- [ ] Mostrar quantidade de dias de cobertura ou unidades necessárias
+- [ ] Validar cálculos em diferentes produtos
+
+### No Dashboard Principal
+- [ ] Implementar cálculo consolidado: SOMA(META DIÁRIA × 30) - ESTOQUE TOTAL
+- [ ] Adicionar card de status de estoque geral
+- [ ] Atualizar lógica de aviso por categoria
+
+### Testes
+- [ ] Validar em Mercado Livre BQ001 (Meta 20, Estoque 674)
+- [ ] Testar em múltiplos produtos e canais
+- [ ] Verificar indicadores visuais
+
+
+## Expansão de Query marketplace.byChannel - EM PROGRESSO
+
+- [ ] Expandir query backend para incluir dailyGoal e fullStock
+- [ ] Adicionar indicador de necessidade de abastecimento na linha do produto
+- [ ] Testar em diferentes produtos e marketplaces
+- [ ] Validar cálculos de necessidade vs suficiência

@@ -119,6 +119,27 @@ export function MarketplaceInsightsPanel({
           </div>
           {renderStockStatus(product)}
         </div>
+        
+        {/* Stock Necessity Indicator */}
+        <div className="flex items-center gap-2 pt-1">
+          {(() => {
+            const necessity = (product.averageDailySales * 30) - product.fullStock;
+            const isSufficient = necessity < 0;
+            return (
+              <div className="flex-1">
+                {isSufficient ? (
+                  <div className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-medium inline-block">
+                    Estoque suficiente
+                  </div>
+                ) : (
+                  <div className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded font-medium inline-block">
+                    Necessidade: {Math.ceil(necessity)} un
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );

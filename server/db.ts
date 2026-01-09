@@ -477,6 +477,15 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
       const goal = goals.find(g => g.productId === product.id && g.channelId === channel.id);
       const dailyGoal = goal?.dailyGoal || 0;
       
+      // Get FULL stock for this specific channel
+      const channelStock = allChannelStocks.find(cs => cs.productId === product.id && cs.channelId === channel.id);
+      const fullStock = channelStock?.fullStock || 0;
+      
+      // Calculate stock necessity: (META DIARIA x 30) - ESTOQUE FULL
+      const stockNecessity = (dailyGoal * 30) - fullStock;
+      const hasStockSufficiency = stockNecessity < 0; // Negative = sufficient
+      const daysOfCoverage = dailyGoal > 0 ? Math.floor(fullStock / dailyGoal) : (fullStock > 0 ? 999 : 0);
+      
       return {
         channelId: channel.id,
         channelName: channel.name,
@@ -484,6 +493,10 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
         revenue: channelRevenue,
         channelGoal: dailyGoal,
         periodGoal: dailyGoal * daysInPeriod,
+        fullStock,
+        stockNecessity,
+        hasStockSufficiency,
+        daysOfCoverage,
       };
     });
     
@@ -544,6 +557,7 @@ export async function getProductSalesWithChannelsByPeriod(startDate: string, end
       totalRevenue,
       avgSalesPerDay: Math.round(avgSalesPerDay * 100) / 100,
       channelSales,
+      fullStock: fullStocks,
       totalStock,
       daysOfStockAvailable,
       stockCoveragePercentage,
