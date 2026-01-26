@@ -493,3 +493,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [ ] Adicionar indicador de necessidade de abastecimento na linha do produto
 - [ ] Testar em diferentes produtos e marketplaces
 - [ ] Validar cálculos de necessidade vs suficiência
+
+
+## Consulta de Preço com IA Integrada - CONCLUÍDO ✅
+
+- [x] Criar função que usa IA para analisar página do Mercado Livre
+- [x] Integrar com rota tRPC listings.getListingPrice
+- [x] Testar com link real do Mercado Livre
+- [x] Salvar checkpoint com solução definitiva

@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
+import { extractMercadoLivrePrice } from "../mercadolivre-ai";
 import {
   getAllProducts,
   getAllChannels,
@@ -174,8 +175,38 @@ export const listingsRouter = router({
     }))
     .query(async ({ input }) => {
       try {
-        console.log(`[Listing Price] Consultando preço: ${input.url}`);
+        console.log(`[Listing Price] Consultando preço com IA: ${input.url}`);
         
+        // Usar IA para extrair preço do Mercado Livre
+        if (input.url.includes('mercadolivre')) {
+          const aiResult = await extractMercadoLivrePrice(input.url);
+          
+          if (aiResult.error) {
+            return {
+              success: false,
+              price: null,
+              originalPrice: null,
+              discount: null,
+              available: false,
+              error: aiResult.error,
+              marketplace: 'Mercado Livre'
+            };
+          }
+          
+          return {
+            success: true,
+            price: aiResult.price,
+            originalPrice: aiResult.originalPrice,
+            discount: aiResult.discount,
+            available: aiResult.available,
+            priceFormatted: aiResult.price ? `R$ ${aiResult.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null,
+            originalPriceFormatted: aiResult.originalPrice ? `R$ ${aiResult.originalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null,
+            marketplace: 'Mercado Livre',
+            error: null
+          };
+        }
+        
+        // Para outros marketplaces, tentar fetch tradicional
         const response = await fetch(input.url, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
