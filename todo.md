@@ -514,3 +514,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Mostrar preço original vs preço com desconto
 - [x] Adicionar indicador visual de promoção
 - [ ] Testar em diferentes produtos do Mercado Livre
+
+
+## Correção de Erro HTTP 405 - Consulta Mercado Livre - CONCLUÍDO ✅
+
+- [x] Debugar erro HTTP 405 ao consultar preço
+- [x] Melhorar headers de requisição (User-Agent, Accept-Language, Referer)
+- [x] Adicionar delay de 2 segundos entre requisições
+- [x] Implementar tratamento melhorado de erros
+- [ ] Testar novamente com link real do Mercado Livre

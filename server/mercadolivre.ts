@@ -38,11 +38,22 @@ export async function extractMercadoLivrePrice(url: string): Promise<MercadoLivr
 
     const page = await browser.newPage();
 
+    // Adicionar headers realistas para evitar bloqueio
+    await page.setExtraHTTPHeaders({
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Referer': 'https://www.mercadolivre.com.br/',
+    });
+
     // Navegar para a URL com timeout
     await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 
     // Aguardar o carregamento do preço
     await page.waitForSelector('[class*="price"]', { timeout: 10000 }).catch(() => null);
+    
+    // Adicionar delay para evitar bloqueio
+    await page.waitForTimeout(2000);
 
     // Extrair preço atual
     const priceText = await page.evaluate(() => {
@@ -125,18 +136,25 @@ export async function extractMercadoLivrePrice(url: string): Promise<MercadoLivr
       currency: 'BRL',
     };
   } catch (error) {
-    console.error('Erro ao extrair preço do Mercado Livre:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.error('Erro ao extrair preço do Mercado Livre:', errorMessage);
+    
+    // Retornar erro mais específico
     return {
       price: null,
       originalPrice: null,
       discount: null,
       available: false,
       currency: 'BRL',
-      error: error instanceof Error ? error.message : 'Erro desconhecido',
+      error: `Erro na consulta: ${errorMessage}. Verifique se a URL está correta e se o produto está disponível.`,
     };
   } finally {
     if (browser) {
-      await browser.close();
+      try {
+        await browser.close();
+      } catch (e) {
+        console.error('Erro ao fechar browser:', e);
+      }
     }
   }
 }
