@@ -162,6 +162,11 @@ export const productListingLinks = mysqlTable("product_listing_links", {
   productId: int("productId").notNull(),
   channelId: int("channelId").notNull(),
   listingUrl: text("listingUrl").notNull(), // URL do anúncio
+  suggestedPrice: int("suggestedPrice"), // Preço sugerido em centavos
+  marketplacePrice: int("marketplacePrice"), // Preço do marketplace em centavos
+  discount: int("discount"), // Desconto em percentual
+  available: int("available").default(1).notNull(), // Disponibilidade (1=sim, 0=não)
+  lastPriceCheck: timestamp("lastPriceCheck"), // Última consulta de preço
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

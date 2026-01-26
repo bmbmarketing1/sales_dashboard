@@ -9,6 +9,7 @@ import { z } from "zod";
 import * as XLSX from "xlsx";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
+import { extractMercadoLivrePrice } from "./mercadolivre";
 import {
   getAllProducts,
   getAllChannels,
@@ -760,6 +761,15 @@ export const appRouter = router({
         }),
   }),
 
+  mercadolivre: router({
+    consultPrice: protectedProcedure
+      .input(z.object({
+        url: z.string().url(),
+      }))
+      .mutation(async ({ input }) => {
+        return await extractMercadoLivrePrice(input.url);
+      }),
+  }),
 
 });
 

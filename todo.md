@@ -493,3 +493,24 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [ ] Adicionar indicador de necessidade de abastecimento na linha do produto
 - [ ] Testar em diferentes produtos e marketplaces
 - [ ] Validar cálculos de necessidade vs suficiência
+
+
+## Consulta de Pre\u00e7o do Mercado Livre - EM PROGRESSO
+
+- [ ] Criar fun\u00e7\u00e3o de web scraping para extrair pre\u00e7o do Mercado Livre
+- [ ] Adicionar coluna de pre\u00e7o sugerido na tabela de produtos
+- [ ] Adicionar coluna de URL do an\u00fancio na tabela de produtos
+- [ ] Criar API tRPC para consultar pre\u00e7o em tempo real
+- [ ] Criar componente de compara\u00e7\u00e3o de pre\u00e7os
+- [ ] Adicionar indicador visual: Competitivo (verde) / Acima (amarelo) / Abaixo (vermelho)
+- [ ] Testar em m\u00faltiplos produtos do Mercado Livre
+
+
+## Botão de Consultar Preço do Mercado Livre - CONCLUÍDO ✅
+
+- [x] Adicionar botão "Consultar Preço" na seção de Links de Anúncio
+- [x] Integrar com API tRPC listings.getListingPrice
+- [x] Exibir preço atual, desconto e disponibilidade
+- [x] Mostrar preço original vs preço com desconto
+- [x] Adicionar indicador visual de promoção
+- [ ] Testar em diferentes produtos do Mercado Livre
