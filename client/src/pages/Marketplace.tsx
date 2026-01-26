@@ -550,6 +550,8 @@ export default function Marketplace() {
                         <p className="font-semibold text-sm">{(product.totalSales / daysInPeriod).toFixed(1)}/dia</p>
                       </div>
                       
+                      <StockDisplay productId={product.id} channelId={channelId} />
+                      
                       <div className="text-right">
                         <div className={cn(
                           "w-16 text-right font-bold",

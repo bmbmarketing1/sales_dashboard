@@ -23,18 +23,6 @@ interface ProductListingLinksProps {
   channelId?: number;
 }
 
-interface PriceData {
-  price: number | null;
-  formatted: string;
-  loading: boolean;
-  error: string | null;
-  marketplace: string;
-  originalPrice?: number | null;
-  originalPriceFormatted?: string | null;
-  discount?: number | null;
-  available?: boolean;
-}
-
 export function ProductListingLinks({
   productId,
   productCode,
@@ -44,7 +32,7 @@ export function ProductListingLinks({
   const [isExpanded, setIsExpanded] = useState(false);
   const [editingLink, setEditingLink] = useState<{ id: number; channelId: number; url: string } | null>(null);
   const [deletingLink, setDeletingLink] = useState<{ id: number; channelId: number } | null>(null);
-  const [priceData, setPriceData] = useState<Record<number, PriceData>>({});
+  const [priceData, setPriceData] = useState<Record<number, { price: number | null; formatted: string; loading: boolean; error: string | null; marketplace: string }>>({});
   
   const { data: links, isLoading, refetch } = trpc.listings.getByProduct.useQuery(
     { productId },
@@ -63,17 +51,7 @@ export function ProductListingLinks({
   const handleGetPrice = async (linkId: number, url: string, channelId: number) => {
     setPriceData(prev => ({
       ...prev,
-      [linkId]: { 
-        price: null, 
-        formatted: '', 
-        loading: true, 
-        error: null, 
-        marketplace: '',
-        originalPrice: null,
-        originalPriceFormatted: null,
-        discount: null,
-        available: false
-      }
+      [linkId]: { price: null, formatted: '', loading: true, error: null, marketplace: '' }
     }));
 
     try {
@@ -103,11 +81,7 @@ export function ProductListingLinks({
           formatted: result.priceFormatted || '',
           loading: false,
           error: result.error,
-          marketplace: result.marketplace || '',
-          originalPrice: result.originalPrice,
-          originalPriceFormatted: result.originalPriceFormatted,
-          discount: result.discount,
-          available: result.available
+          marketplace: result.marketplace || ''
         }
       }));
     } catch (error) {
@@ -118,11 +92,7 @@ export function ProductListingLinks({
           formatted: '',
           loading: false,
           error: error instanceof Error ? error.message : 'Erro ao consultar preço',
-          marketplace: '',
-          originalPrice: null,
-          originalPriceFormatted: null,
-          discount: null,
-          available: false
+          marketplace: ''
         }
       }));
     }
@@ -247,32 +217,17 @@ export function ProductListingLinks({
                   {priceData[link.id] && (
                     <div className="mt-2 pt-2 border-t border-gray-200">
                       {priceData[link.id].error ? (
-                        <p className="text-xs text-red-600">❌ {priceData[link.id].error}</p>
+                        <p className="text-xs text-red-600">{priceData[link.id].error}</p>
                       ) : priceData[link.id].formatted ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-green-700">
-                              {priceData[link.id].formatted}
-                            </p>
-                            {priceData[link.id].discount && priceData[link.id].discount > 0 && (
-                              <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded">
-                                -{priceData[link.id].discount}%
-                              </span>
-                            )}
-                            {priceData[link.id].available === false && (
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
-                                Fora de estoque
-                              </span>
-                            )}
-                          </div>
-                          {priceData[link.id].originalPriceFormatted && (
-                            <p className="text-xs text-gray-500 line-through">
-                              De: {priceData[link.id].originalPriceFormatted}
+                        <div>
+                          <p className="text-sm font-semibold text-green-700">
+                            Preço: {priceData[link.id].formatted}
+                          </p>
+                          {priceData[link.id].marketplace && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Consultado em: {priceData[link.id].marketplace}
                             </p>
                           )}
-                          <p className="text-xs text-gray-600">
-                            📍 {priceData[link.id].marketplace}
-                          </p>
                         </div>
                       ) : null}
                     </div>

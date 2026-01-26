@@ -2,7 +2,6 @@ import { and, eq } from "drizzle-orm";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
-import { extractMercadoLivrePrice } from "../mercadolivre";
 import {
   getAllProducts,
   getAllChannels,
@@ -176,21 +175,6 @@ export const listingsRouter = router({
     .query(async ({ input }) => {
       try {
         console.log(`[Listing Price] Consultando preço: ${input.url}`);
-        
-        if (input.url.includes('mercadolivre')) {
-          const result = await extractMercadoLivrePrice(input.url);
-          return {
-            success: !!result.price,
-            price: result.price,
-            priceFormatted: result.price ? `R$ ${result.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null,
-            originalPrice: result.originalPrice,
-            originalPriceFormatted: result.originalPrice ? `R$ ${result.originalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null,
-            discount: result.discount,
-            available: result.available,
-            marketplace: 'Mercado Livre',
-            error: result.error
-          };
-        }
         
         const response = await fetch(input.url, {
           headers: {
