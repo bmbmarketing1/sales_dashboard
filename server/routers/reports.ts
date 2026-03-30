@@ -7,12 +7,25 @@ import { getAllProducts, getAllChannels, getSalesByMarketplace } from "../db";
  * Gera um relatório em Excel com:
  * - Aba 1: Consolidado (vendas totais de todos os marketplaces)
  * - Aba 2+: Por Marketplace (vendas separadas por canal)
+ * 
+ * @param startDate Data inicial (YYYY-MM-DD)
+ * @param endDate Data final (YYYY-MM-DD)
+ * @param categories Array de categorias para filtrar (vazio = todas)
  */
 export async function generateMarketplaceReportExcel(
   startDate: string,
-  endDate: string
+  endDate: string,
+  categories?: string[]
 ): Promise<Buffer> {
-  const allProducts = await getAllProducts();
+  let allProducts = await getAllProducts();
+  
+  // Filtrar produtos por categorias se especificadas
+  if (categories && categories.length > 0) {
+    allProducts = allProducts.filter(p => 
+      p.category && categories.includes(p.category)
+    );
+  }
+  
   const allChannels = await getAllChannels();
 
   // Calcular dias no período
@@ -68,6 +81,13 @@ export async function generateMarketplaceReportExcel(
     const sheetData = [];
 
     for (const product of marketplaceData.products) {
+      // Filtrar produtos por categoria se especificadas
+      if (categories && categories.length > 0) {
+        if (!product.category || !categories.includes(product.category)) {
+          continue;
+        }
+      }
+
       sheetData.push({
         "SKU": product.internalCode,
         "Produto": product.description,
@@ -80,31 +100,35 @@ export async function generateMarketplaceReportExcel(
       });
     }
 
-    // Adicionar linha de totais
-    const totalSales = sheetData.reduce((sum, row) => sum + row["Vendas"], 0);
-    const totalGoal = sheetData.reduce((sum, row) => sum + row["Meta"], 0);
-    const totalPercentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
+    // Adicionar linha de totais (apenas se houver dados)
+    if (sheetData.length > 0) {
+      const totalSales = sheetData.reduce((sum, row) => sum + row["Vendas"], 0);
+      const totalGoal = sheetData.reduce((sum, row) => sum + row["Meta"], 0);
+      const totalPercentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
 
-    sheetData.push({
-      "SKU": "TOTAL",
-      "Produto": "",
-      "Categoria": "",
-      "Vendas": totalSales,
-      "Meta": totalGoal,
-      "Atingimento %": totalPercentage,
-      "Média/Dia": daysInPeriod > 0 ? Math.round((totalSales / daysInPeriod) * 100) / 100 : 0,
-      "Estoque FULL": "",
-    });
+      sheetData.push({
+        "SKU": "TOTAL",
+        "Produto": "",
+        "Categoria": "",
+        "Vendas": totalSales,
+        "Meta": totalGoal,
+        "Atingimento %": totalPercentage,
+        "Média/Dia": daysInPeriod > 0 ? Math.round((totalSales / daysInPeriod) * 100) / 100 : 0,
+        "Estoque FULL": "",
+      });
 
-    marketplaceSheets[channel.name] = sheetData;
+      marketplaceSheets[channel.name] = sheetData;
+    }
   }
 
   // ============ CRIAR WORKBOOK ============
   const workbook = XLSX.utils.book_new();
 
-  // Adicionar aba consolidada
-  const consolidatedSheet = XLSX.utils.json_to_sheet(consolidatedData);
-  XLSX.utils.book_append_sheet(workbook, consolidatedSheet, "Consolidado");
+  // Adicionar aba consolidada (apenas se houver dados)
+  if (consolidatedData.length > 0) {
+    const consolidatedSheet = XLSX.utils.json_to_sheet(consolidatedData);
+    XLSX.utils.book_append_sheet(workbook, consolidatedSheet, "Consolidado");
+  }
 
   // Adicionar abas por marketplace
   for (const [channelName, data] of Object.entries(marketplaceSheets)) {
@@ -122,17 +146,25 @@ export const reportsRouter = router({
     .input(z.object({
       startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      categories: z.array(z.string()).optional(),
     }))
     .mutation(async ({ input }) => {
       try {
-        const buffer = await generateMarketplaceReportExcel(input.startDate, input.endDate);
+        const buffer = await generateMarketplaceReportExcel(
+          input.startDate, 
+          input.endDate,
+          input.categories
+        );
         
         // Converter para base64 para enviar ao cliente
         const base64 = buffer.toString("base64");
         
         // Gerar nome do arquivo com data
         const now = new Date();
-        const fileName = `relatorio_vendas_${input.startDate}_${input.endDate}_${now.getTime()}.xlsx`;
+        const categoryLabel = input.categories && input.categories.length > 0 
+          ? `_${input.categories.join('-')}`
+          : '';
+        const fileName = `relatorio_vendas_${input.startDate}_${input.endDate}${categoryLabel}_${now.getTime()}.xlsx`;
 
         return {
           success: true,

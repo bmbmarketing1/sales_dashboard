@@ -509,3 +509,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Implementar endpoint tRPC para exportação em Excel
 - [x] Criar componente de UI com botão de exportação
 - [x] Testar funcionalidade e validar arquivo gerado
+
+
+## Filtro de Categorias na Exportação de Relatório
+
+- [x] Atualizar função backend para aceitar filtro de categorias
+- [x] Atualizar endpoint tRPC com parâmetro de categorias
+- [x] Criar componente de seleção de categorias
+- [x] Integrar seleção de categorias no ExportReportButton
+- [x] Testar funcionalidade com diferentes combinações de categorias

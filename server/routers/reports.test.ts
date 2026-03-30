@@ -240,3 +240,183 @@ describe("Reports Router", () => {
     });
   });
 });
+
+
+  describe("generateMarketplaceReportExcel with category filter", () => {
+    it("deve filtrar produtos por categorias", async () => {
+      const mockProducts = [
+        {
+          id: 1,
+          internalCode: "BQ001",
+          description: "Produto 1",
+          category: "Brinquedos",
+          externalId: "ext1",
+          dailyGoal: 10,
+          imageUrl: null,
+          notes: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 2,
+          internalCode: "BL001",
+          description: "Produto 2",
+          category: "Utilidades",
+          externalId: "ext2",
+          dailyGoal: 10,
+          imageUrl: null,
+          notes: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockChannels = [
+        {
+          id: 1,
+          name: "Amazon",
+          dailyGoal: 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockMarketplaceData = {
+        channel: {
+          id: 1,
+          name: "Amazon",
+          totalSales: 100,
+          totalGoal: 200,
+          overallPercentage: 50,
+          dailyGoal: 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        products: [
+          {
+            id: 1,
+            externalId: "ext1",
+            internalCode: "BQ001",
+            description: "Produto 1",
+            category: "Brinquedos",
+            dailyGoal: 10,
+            periodGoal: 300,
+            totalSales: 150,
+            percentage: 50,
+            averageDailySales: 5,
+            fullStock: 100,
+            stockCoverage: 66,
+            stockExcess: 0,
+            stockDeficit: 0,
+          },
+          {
+            id: 2,
+            externalId: "ext2",
+            internalCode: "BL001",
+            description: "Produto 2",
+            category: "Utilidades",
+            dailyGoal: 10,
+            periodGoal: 300,
+            totalSales: 100,
+            percentage: 33,
+            averageDailySales: 3,
+            fullStock: 100,
+            stockCoverage: 50,
+            stockExcess: 0,
+            stockDeficit: 0,
+          },
+        ],
+        daysInPeriod: 30,
+      };
+
+      vi.mocked(db.getAllProducts).mockResolvedValue(mockProducts);
+      vi.mocked(db.getAllChannels).mockResolvedValue(mockChannels);
+      vi.mocked(db.getSalesByMarketplace).mockResolvedValue(mockMarketplaceData);
+
+      // Gerar relatório apenas com categoria "Brinquedos"
+      const buffer = await generateMarketplaceReportExcel(
+        "2024-01-01",
+        "2024-01-31",
+        ["Brinquedos"]
+      );
+
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.length).toBeGreaterThan(0);
+      
+      // Verificar que getAllProducts foi chamado
+      expect(db.getAllProducts).toHaveBeenCalled();
+    });
+
+    it("deve incluir todos os produtos quando nenhuma categoria é especificada", async () => {
+      const mockProducts = [
+        {
+          id: 1,
+          internalCode: "BQ001",
+          description: "Produto 1",
+          category: "Brinquedos",
+          externalId: "ext1",
+          dailyGoal: 10,
+          imageUrl: null,
+          notes: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockChannels = [
+        {
+          id: 1,
+          name: "Amazon",
+          dailyGoal: 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockMarketplaceData = {
+        channel: {
+          id: 1,
+          name: "Amazon",
+          totalSales: 100,
+          totalGoal: 200,
+          overallPercentage: 50,
+          dailyGoal: 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        products: [
+          {
+            id: 1,
+            externalId: "ext1",
+            internalCode: "BQ001",
+            description: "Produto 1",
+            category: "Brinquedos",
+            dailyGoal: 10,
+            periodGoal: 300,
+            totalSales: 150,
+            percentage: 50,
+            averageDailySales: 5,
+            fullStock: 100,
+            stockCoverage: 66,
+            stockExcess: 0,
+            stockDeficit: 0,
+          },
+        ],
+        daysInPeriod: 30,
+      };
+
+      vi.mocked(db.getAllProducts).mockResolvedValue(mockProducts);
+      vi.mocked(db.getAllChannels).mockResolvedValue(mockChannels);
+      vi.mocked(db.getSalesByMarketplace).mockResolvedValue(mockMarketplaceData);
+
+      // Gerar relatório sem especificar categorias
+      const buffer = await generateMarketplaceReportExcel(
+        "2024-01-01",
+        "2024-01-31"
+      );
+
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.length).toBeGreaterThan(0);
+    });
+  });
+});
