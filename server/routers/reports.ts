@@ -1,0 +1,150 @@
+import { publicProcedure, router } from "../_core/trpc";
+import { z } from "zod";
+import * as XLSX from "xlsx";
+import { getAllProducts, getAllChannels, getSalesByMarketplace } from "../db";
+
+/**
+ * Gera um relatório em Excel com:
+ * - Aba 1: Consolidado (vendas totais de todos os marketplaces)
+ * - Aba 2+: Por Marketplace (vendas separadas por canal)
+ */
+export async function generateMarketplaceReportExcel(
+  startDate: string,
+  endDate: string
+): Promise<Buffer> {
+  const allProducts = await getAllProducts();
+  const allChannels = await getAllChannels();
+
+  // Calcular dias no período
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysInPeriod = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  // ============ ABA 1: CONSOLIDADO ============
+  const consolidatedData = [];
+
+  for (const product of allProducts) {
+    const row: Record<string, any> = {
+      "SKU": product.internalCode,
+      "Produto": product.description,
+      "Categoria": product.category || "-",
+    };
+
+    let totalConsolidatedSales = 0;
+    let totalConsolidatedGoal = 0;
+
+    // Somar vendas de todos os marketplaces
+    for (const channel of allChannels) {
+      const marketplaceData = await getSalesByMarketplace(channel.id, startDate, endDate);
+      const productData = marketplaceData.products.find(p => p.id === product.id);
+
+      if (productData) {
+        totalConsolidatedSales += productData.totalSales;
+        totalConsolidatedGoal += productData.periodGoal;
+      }
+    }
+
+    const consolidatedPercentage = totalConsolidatedGoal > 0 
+      ? Math.round((totalConsolidatedSales / totalConsolidatedGoal) * 100) 
+      : 0;
+
+    const consolidatedAverage = daysInPeriod > 0 
+      ? Math.round((totalConsolidatedSales / daysInPeriod) * 100) / 100 
+      : 0;
+
+    row["Vendas Total"] = totalConsolidatedSales;
+    row["Meta Total"] = totalConsolidatedGoal;
+    row["Atingimento %"] = consolidatedPercentage;
+    row["Média/Dia"] = consolidatedAverage;
+
+    consolidatedData.push(row);
+  }
+
+  // ============ ABAS POR MARKETPLACE ============
+  const marketplaceSheets: Record<string, any[]> = {};
+
+  for (const channel of allChannels) {
+    const marketplaceData = await getSalesByMarketplace(channel.id, startDate, endDate);
+    const sheetData = [];
+
+    for (const product of marketplaceData.products) {
+      sheetData.push({
+        "SKU": product.internalCode,
+        "Produto": product.description,
+        "Categoria": product.category || "-",
+        "Vendas": product.totalSales,
+        "Meta": product.periodGoal,
+        "Atingimento %": product.percentage,
+        "Média/Dia": product.averageDailySales,
+        "Estoque FULL": product.fullStock,
+      });
+    }
+
+    // Adicionar linha de totais
+    const totalSales = sheetData.reduce((sum, row) => sum + row["Vendas"], 0);
+    const totalGoal = sheetData.reduce((sum, row) => sum + row["Meta"], 0);
+    const totalPercentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
+
+    sheetData.push({
+      "SKU": "TOTAL",
+      "Produto": "",
+      "Categoria": "",
+      "Vendas": totalSales,
+      "Meta": totalGoal,
+      "Atingimento %": totalPercentage,
+      "Média/Dia": daysInPeriod > 0 ? Math.round((totalSales / daysInPeriod) * 100) / 100 : 0,
+      "Estoque FULL": "",
+    });
+
+    marketplaceSheets[channel.name] = sheetData;
+  }
+
+  // ============ CRIAR WORKBOOK ============
+  const workbook = XLSX.utils.book_new();
+
+  // Adicionar aba consolidada
+  const consolidatedSheet = XLSX.utils.json_to_sheet(consolidatedData);
+  XLSX.utils.book_append_sheet(workbook, consolidatedSheet, "Consolidado");
+
+  // Adicionar abas por marketplace
+  for (const [channelName, data] of Object.entries(marketplaceSheets)) {
+    const sheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, sheet, channelName);
+  }
+
+  // Converter para buffer
+  const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+  return buffer;
+}
+
+export const reportsRouter = router({
+  exportMarketplaceReport: publicProcedure
+    .input(z.object({
+      startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        const buffer = await generateMarketplaceReportExcel(input.startDate, input.endDate);
+        
+        // Converter para base64 para enviar ao cliente
+        const base64 = buffer.toString("base64");
+        
+        // Gerar nome do arquivo com data
+        const now = new Date();
+        const fileName = `relatorio_vendas_${input.startDate}_${input.endDate}_${now.getTime()}.xlsx`;
+
+        return {
+          success: true,
+          fileName,
+          data: base64,
+        };
+      } catch (error) {
+        console.error("[exportMarketplaceReport] Error:", error);
+        return {
+          success: false,
+          error: "Erro ao gerar relatório",
+        };
+      }
+    }),
+});

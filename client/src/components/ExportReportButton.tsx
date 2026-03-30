@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface ExportReportButtonProps {
   startDate: string;
@@ -11,22 +12,30 @@ interface ExportReportButtonProps {
 
 export function ExportReportButton({ startDate, endDate, periodLabel }: ExportReportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const exportMutation = trpc.reports.exportMarketplaceReport.useMutation();
   
   const handleExport = async () => {
     try {
       setIsExporting(true);
       
-      // Use direct HTTP endpoint instead of tRPC
-      const response = await fetch(
-        `/api/export/report?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
-      );
+      // Call tRPC mutation
+      const result = await exportMutation.mutateAsync({
+        startDate,
+        endDate,
+      });
       
-      if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao gerar relatório");
       }
       
-      // Get the blob and download it
-      const blob = await response.blob();
+      // Decode base64 and download
+      const binaryString = atob(result.data || "");
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

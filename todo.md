@@ -501,3 +501,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Integrar com rota tRPC listings.getListingPrice
 - [x] Testar com link real do Mercado Livre
 - [x] Salvar checkpoint com solução definitiva
+
+
+## Exportação de Relatório por Marketplace
+
+- [x] Criar função backend para gerar dados do relatório (consolidado + por marketplace)
+- [x] Implementar endpoint tRPC para exportação em Excel
+- [x] Criar componente de UI com botão de exportação
+- [x] Testar funcionalidade e validar arquivo gerado

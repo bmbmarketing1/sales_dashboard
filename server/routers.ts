@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { stockRouter } from "./routers/stock";
 import { goalsRouter } from "./routers/goals";
 import { listingsRouter } from "./routers/listings";
+import { reportsRouter } from "./routers/reports";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
@@ -58,6 +59,7 @@ export const appRouter = router({
   stock: stockRouter,
   goals: goalsRouter,
   listings: listingsRouter,
+  reports: reportsRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -325,13 +327,15 @@ export const appRouter = router({
         startDate: z.string(),
         endDate: z.string(),
         periodDays: z.number(),
+        category: z.string().optional(),
       }))
       .query(async ({ input }) => {
         return getMarketplaceInsights(
           input.channelId,
           input.startDate,
           input.endDate,
-          input.periodDays
+          input.periodDays,
+          input.category
         );
       }),
   }),
