@@ -32,6 +32,7 @@ export function ExportReportButton({
   const handleExport = async () => {
     try {
       setIsExporting(true);
+      console.log('[ExportReportButton] Starting export with:', { startDate, endDate, selectedCategories });
       
       // Call tRPC mutation with categories filter
       const result = await exportMutation.mutateAsync({
@@ -40,21 +41,21 @@ export function ExportReportButton({
         categories: selectedCategories.length > 0 ? selectedCategories : undefined,
       });
       
-      if (!result.success) {
-        throw new Error(result.error || "Erro ao gerar relatório");
+      console.log('[ExportReportButton] Got result:', result);
+      
+      if (!result || !result.success) {
+        const errorMsg = result?.error || "Erro ao gerar relatório";
+        throw new Error(errorMsg);
       }
       
-      // Decode base64 and download
-      const binaryString = atob(result.data || "");
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      if (!result.url) {
+        throw new Error("Nenhuma URL retornada do servidor");
       }
       
-      const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
+      // Download direto do S3 via link
+      console.log('[ExportReportButton] Downloading from S3 URL');
       const link = document.createElement('a');
-      link.href = url;
+      link.href = result.url;
       
       // Build filename with category info
       const categoryLabel = selectedCategories.length > 0 
@@ -65,12 +66,13 @@ export function ExportReportButton({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
       
+      console.log('[ExportReportButton] Export completed successfully');
       toast.success("Relatório exportado com sucesso!");
     } catch (error: any) {
-      toast.error(`Erro ao exportar relatório: ${error.message}`);
-      console.error("Export error:", error);
+      console.error("[ExportReportButton] Export error:", error);
+      const errorMsg = error?.message || error?.toString?.() || "Erro desconhecido ao exportar";
+      toast.error(`Erro ao exportar relatório: ${errorMsg}`);
     } finally {
       setIsExporting(false);
     }

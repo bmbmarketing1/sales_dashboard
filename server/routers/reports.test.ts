@@ -95,7 +95,8 @@ describe("Reports Router", () => {
       // Verificar que as funções foram chamadas
       expect(db.getAllProducts).toHaveBeenCalled();
       expect(db.getAllChannels).toHaveBeenCalled();
-      expect(db.getSalesByMarketplace).toHaveBeenCalledTimes(2); // Uma vez por canal
+      // getSalesByMarketplace é chamado uma vez por canal (2 canais) com Promise.all
+      expect(db.getSalesByMarketplace).toHaveBeenCalledTimes(2);
     });
 
     it("deve incluir dados consolidados e por marketplace", async () => {
@@ -239,8 +240,6 @@ describe("Reports Router", () => {
       expect(buffer.length).toBeGreaterThan(0);
     });
   });
-});
-
 
   describe("generateMarketplaceReportExcel with category filter", () => {
     it("deve filtrar produtos por categorias", async () => {
