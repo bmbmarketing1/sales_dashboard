@@ -518,3 +518,10 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Criar componente de seleção de categorias
 - [x] Integrar seleção de categorias no ExportReportButton
 - [x] Testar funcionalidade com diferentes combinações de categorias
+
+
+## Adicionar Estoque e Cobertura de Dias ao Relatório
+
+- [x] Atualizar função backend para incluir dados de estoque e cobertura
+- [x] Adicionar colunas de estoque e cobertura ao Excel
+- [x] Testar relatório com novas colunas

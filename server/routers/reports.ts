@@ -100,6 +100,24 @@ export async function generateMarketplaceReportExcel(
       row["Meta Total"] = totalConsolidatedGoal;
       row["Atingimento %"] = consolidatedPercentage;
       row["Média/Dia"] = consolidatedAverage;
+      
+      // Calcular estoque total consolidado e cobertura de dias
+      let totalConsolidatedStock = 0;
+      for (const channel of allChannels) {
+        const marketplaceData = channelDataMap.get(channel.id);
+        if (!marketplaceData || !marketplaceData.products) continue;
+        const productData = marketplaceData.products.find((p: any) => p.id === product.id);
+        if (productData) {
+          totalConsolidatedStock += productData.fullStock;
+        }
+      }
+      
+      const coverageDays = consolidatedAverage > 0 
+        ? Math.round((totalConsolidatedStock / consolidatedAverage) * 10) / 10
+        : 0;
+      
+      row["Estoque Total"] = totalConsolidatedStock;
+      row["Cobertura (dias)"] = coverageDays;
 
       consolidatedData.push(row);
     }
@@ -125,6 +143,10 @@ export async function generateMarketplaceReportExcel(
           }
         }
 
+        const coverageDays = product.averageDailySales > 0
+          ? Math.round((product.fullStock / product.averageDailySales) * 10) / 10
+          : 0;
+        
         sheetData.push({
           "SKU": product.internalCode,
           "Produto": product.description,
@@ -133,7 +155,8 @@ export async function generateMarketplaceReportExcel(
           "Meta": product.periodGoal,
           "Atingimento %": product.percentage,
           "Média/Dia": product.averageDailySales,
-          "Estoque FULL": product.fullStock,
+          "Estoque Total": product.fullStock,
+          "Cobertura (dias)": coverageDays,
         });
       }
 
@@ -143,6 +166,12 @@ export async function generateMarketplaceReportExcel(
         const totalGoal = sheetData.reduce((sum, row) => sum + row["Meta"], 0);
         const totalPercentage = totalGoal > 0 ? Math.round((totalSales / totalGoal) * 100) : 0;
 
+        const totalAverage = daysInPeriod > 0 ? Math.round((totalSales / daysInPeriod) * 100) / 100 : 0;
+        const totalStock = sheetData.reduce((sum, row) => sum + (row["Estoque Total"] || 0), 0);
+        const totalCoverageDays = totalAverage > 0
+          ? Math.round((totalStock / totalAverage) * 10) / 10
+          : 0;
+        
         sheetData.push({
           "SKU": "TOTAL",
           "Produto": "",
@@ -150,8 +179,9 @@ export async function generateMarketplaceReportExcel(
           "Vendas": totalSales,
           "Meta": totalGoal,
           "Atingimento %": totalPercentage,
-          "Média/Dia": daysInPeriod > 0 ? Math.round((totalSales / daysInPeriod) * 100) / 100 : 0,
-          "Estoque FULL": "",
+          "Média/Dia": totalAverage,
+          "Estoque Total": totalStock,
+          "Cobertura (dias)": totalCoverageDays,
         });
 
         marketplaceSheets[channel.name] = sheetData;

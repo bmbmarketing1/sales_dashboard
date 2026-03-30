@@ -172,6 +172,76 @@ describe("Reports Router", () => {
       expect(bufferString).toBe("504b0304"); // Assinatura de arquivo ZIP (XLSX é ZIP)
     });
 
+    it("deve incluir colunas de estoque e cobertura de dias", async () => {
+      const mockProducts = [
+        {
+          id: 1,
+          internalCode: "BQ001",
+          description: "Produto 1",
+          category: "Brinquedos",
+          externalId: "ext1",
+          dailyGoal: 10,
+          imageUrl: null,
+          notes: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockChannels = [
+        {
+          id: 1,
+          name: "Amazon",
+          dailyGoal: 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockMarketplaceData = {
+        channel: {
+          id: 1,
+          name: "Amazon",
+          totalSales: 100,
+          totalGoal: 200,
+          overallPercentage: 50,
+          dailyGoal: 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        products: [
+          {
+            id: 1,
+            externalId: "ext1",
+            internalCode: "BQ001",
+            description: "Produto 1",
+            category: "Brinquedos",
+            dailyGoal: 10,
+            periodGoal: 300,
+            totalSales: 150,
+            percentage: 50,
+            averageDailySales: 5,
+            fullStock: 150,
+            stockCoverage: 66,
+            stockExcess: 0,
+            stockDeficit: 0,
+          },
+        ],
+        daysInPeriod: 30,
+      };
+
+      vi.mocked(db.getAllProducts).mockResolvedValue(mockProducts);
+      vi.mocked(db.getAllChannels).mockResolvedValue(mockChannels);
+      vi.mocked(db.getSalesByMarketplace).mockResolvedValue(mockMarketplaceData);
+
+      const buffer = await generateMarketplaceReportExcel("2024-01-01", "2024-01-31");
+
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.length).toBeGreaterThan(0);
+      // Verificar que as colunas de estoque foram adicionadas (buffer deve ser maior)
+      expect(buffer.length).toBeGreaterThan(15000);
+    });
+
     it("deve calcular corretamente as médias diárias", async () => {
       const mockProducts = [
         {
