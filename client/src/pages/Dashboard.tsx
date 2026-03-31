@@ -16,6 +16,7 @@ import { StockUpload } from "@/components/StockUpload";
 import { ListingsUpload } from "@/components/ListingsUpload";
 import { RevenueByCategoryCards } from "@/components/RevenueByCategoryCards";
 import { ExportReportButton } from "@/components/ExportReportButton";
+import { GoalsUploadButton } from "@/components/GoalsUploadButton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
@@ -353,6 +354,7 @@ export default function Dashboard() {
                 <Upload className="w-4 h-4 mr-2" />
                 Links
               </Button>
+              <GoalsUploadButton />
               <Button onClick={() => setUploadOpen(true)}>
                 <Upload className="w-4 h-4 mr-2" />
                 Importar Planilha

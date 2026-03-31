@@ -525,3 +525,12 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Atualizar função backend para incluir dados de estoque e cobertura
 - [x] Adicionar colunas de estoque e cobertura ao Excel
 - [x] Testar relatório com novas colunas
+
+
+## Upload de Planilha para Alterar Metas por Produto
+
+- [x] Analisar estrutura de dados e criar função backend para processar Excel
+- [x] Implementar endpoint tRPC para upload e validação de metas
+- [x] Criar componente de UI para upload de arquivo
+- [x] Adicionar preview e confirmação de dados antes de salvar
+- [x] Testar funcionalidade com arquivo de exemplo
