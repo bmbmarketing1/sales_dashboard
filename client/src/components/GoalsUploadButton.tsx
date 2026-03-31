@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle, Loader2, Download } from "lucide-react";
 import { useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 
@@ -10,8 +10,10 @@ export function GoalsUploadButton() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [previewData, setPreviewData] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = trpc.goals.importFromFile.useMutation();
+  const templateQuery = trpc.templates.downloadGoalsTemplate.useQuery();
 
   const showToast = useCallback((title: string, description: string, variant: string = "default") => {
     if (variant === "destructive") {
@@ -20,6 +22,38 @@ export function GoalsUploadButton() {
       console.log(`${title}: ${description}`);
     }
   }, []);
+
+  const handleDownloadTemplate = async () => {
+    setIsDownloading(true);
+    try {
+      const result = await templateQuery.refetch();
+      if (result.data?.success && result.data?.fileBase64) {
+        // Decodificar base64 e fazer download
+        const binaryString = atob(result.data.fileBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = result.data.fileName || "metas_template.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast("Sucesso", "Modelo baixado com sucesso");
+      } else {
+        showToast("Erro", "Erro ao baixar modelo", "destructive");
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Erro ao baixar modelo";
+      showToast("Erro", errorMsg, "destructive");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -95,24 +129,44 @@ export function GoalsUploadButton() {
         className="hidden"
       />
 
-      <Button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isLoading}
-        variant="outline"
-        className="gap-2"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Processando...
-          </>
-        ) : (
-          <>
-            <Upload className="h-4 w-4" />
-            Importar Metas
-          </>
-        )}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          onClick={handleDownloadTemplate}
+          disabled={isDownloading}
+          variant="outline"
+          className="gap-2"
+        >
+          {isDownloading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Baixando...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              Modelo
+            </>
+          )}
+        </Button>
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading}
+          variant="outline"
+          className="gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processando...
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4" />
+              Importar Metas
+            </>
+          )}
+        </Button>
+      </div>
 
       {showPreview && previewData && (
         <Card className="fixed inset-0 m-auto w-96 max-h-96 p-4 z-50 shadow-lg">

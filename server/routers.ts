@@ -5,6 +5,7 @@ import { stockRouter } from "./routers/stock";
 import { goalsRouter } from "./routers/goals";
 import { listingsRouter } from "./routers/listings";
 import { reportsRouter } from "./routers/reports";
+import { templatesRouter } from "./routers/templates";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as XLSX from "xlsx";
@@ -60,6 +61,7 @@ export const appRouter = router({
   goals: goalsRouter,
   listings: listingsRouter,
   reports: reportsRouter,
+  templates: templatesRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

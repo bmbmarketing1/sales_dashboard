@@ -534,3 +534,11 @@ A planilha de estoque contém colunas para cada marca em cada marketplace:
 - [x] Criar componente de UI para upload de arquivo
 - [x] Adicionar preview e confirmação de dados antes de salvar
 - [x] Testar funcionalidade com arquivo de exemplo
+
+
+## Modelo de Planilha para Importação de Metas
+
+- [x] Gerar arquivo Excel modelo com dados de exemplo
+- [x] Criar endpoint tRPC para download do modelo
+- [x] Adicionar botão de download do modelo na interface
+- [x] Testar download e validar formato
